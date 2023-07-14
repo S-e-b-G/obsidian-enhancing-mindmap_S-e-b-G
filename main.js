@@ -8250,6 +8250,7 @@ class MindMap {
         var keyCode = e.keyCode || e.which || e.charCode;
         var ctrlKey = e.ctrlKey || e.metaKey;
         var shiftKey = e.shiftKey;
+        e.altKey;
         if (!ctrlKey && !shiftKey) { // No special key
             // tab
             // tab (OK) / Insert (OK)
@@ -8302,6 +8303,7 @@ class MindMap {
         var keyCode = e.keyCode || e.which || e.charCode;
         var ctrlKey = e.ctrlKey || e.metaKey;
         var shiftKey = e.shiftKey;
+        var altKey = e.altKey;
         if (!ctrlKey && !shiftKey) { // No special key
             //enter 
             if (keyCode == 13 || e.key == 'Enter') {
@@ -8529,6 +8531,35 @@ class MindMap {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log(text + " / " + node.data.text);
+            }
+        }
+        if (altKey && !ctrlKey && !shiftKey) { // Alt key
+            // Alt + H => Highlight
+            if (keyCode == 72) {
+                var node = this.selectNode;
+                var text = node.data.text;
+                if (text.substring(0, 2) == "==") {
+                    // Already highlighted
+                    text = text.substring(2); // Remove leading ==
+                    //console.log(text);         // display
+                    if (text.substring(text.length - 2) == "==") {
+                        // Remove trailing ==
+                        text = text.substring(0, text.length - 2);
+                        //console.log(text);      // Display
+                    }
+                    // else: no trailing ==
+                }
+                else { // Not highlighted
+                    text = "==" + text + "==";
+                    //console.log(text);
+                }
+                //console.log("Final: "+text);
+                // Set in node text
+                node.data.oldText = node.data.text;
+                node.setText(text);
+                e.preventDefault();
+                e.stopPropagation();
+                //console.log(text+" / "+node.data.text);
             }
         }
     }
