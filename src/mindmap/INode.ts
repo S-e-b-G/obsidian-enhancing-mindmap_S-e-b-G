@@ -419,7 +419,7 @@ export default class Node {
 
     getPreviousSibling() {
         var nodeIdx = this.getIndex();
-        var returnedNode = this;
+        var returnedNode = (this as Node);
         
         var searchedIdx = nodeIdx-1;
         if(nodeIdx == 0)
@@ -442,7 +442,7 @@ export default class Node {
     
     getNextSibling() {
         var nodeIdx = this.getIndex();
-        var returnedNode = this;
+        var returnedNode = (this as Node);
 
         var searchedIdx = nodeIdx+1;
 
@@ -465,7 +465,7 @@ export default class Node {
     }
 
     getFirstSibling() {
-        var returnedNode = this;
+        var returnedNode = (this as Node);
         var searchedIdx = 0;
 
         // Search the sibling
@@ -481,7 +481,7 @@ export default class Node {
     }
 
     getLastSibling() {
-        var returnedNode = this;
+        var returnedNode = (this as Node);
         var searchedIdx = this.parent.children.length-1;
 
         // Search the sibling

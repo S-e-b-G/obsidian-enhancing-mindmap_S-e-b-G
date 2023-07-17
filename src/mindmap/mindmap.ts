@@ -58,6 +58,7 @@ export default class MindMap {
     _dragType:string='';
     _left:number;
     _top:number;
+    dispLevel:number;
     constructor(data: INodeData, containerEL: HTMLElement, setting?: Setting) {
         this.setting = Object.assign({
             theme: 'default',
@@ -133,6 +134,7 @@ export default class MindMap {
 
         this.initEvent();
         //this.center();
+        this.dispLevel=0;
     }
 
     setMenuIcon(){
@@ -357,6 +359,8 @@ export default class MindMap {
                     this._menuDom.style.display = 'none';
                 }
             }
+
+
         }
 
 
@@ -376,7 +380,6 @@ export default class MindMap {
             }
         }
 
-        // SG NEW: START
             // Shift + F2 : Edit as space does
         if (!ctrlKey && shiftKey) {             // SHIFT key
             if (keyCode == 113) {
@@ -390,7 +393,6 @@ export default class MindMap {
                 }
             }
         }
-        // SG NEW: END
     }
 
     appKeyup(e: KeyboardEvent) {
@@ -451,7 +453,6 @@ export default class MindMap {
                 }
             }
 
-            // SG NEW: Start
                 // Escape
             if (keyCode == 27) {
                 e.preventDefault();
@@ -464,7 +465,6 @@ export default class MindMap {
                     this.undo();
                 }
             }
-            // SG NEW: END
 
             // up
             if (keyCode == 38 || e.key == 'ArrowUp') {
@@ -499,12 +499,19 @@ export default class MindMap {
                 }
             }
 
+            // Home : Select root node
+            if (keyCode == 36) {
+                if( (!this.selectNode)          ||
+                    (!this.selectNode.isEdit)   )
+                {// No edition: select root node
+                    this.root.select();
+                    this.center();
+                }
+            }
         }
 
 
         if (ctrlKey && !shiftKey) {             // CTRL key
-            //ctr + /  toggle expand node
-            // SG NEW: START
             /*//ctr + /  (or Ctrl + NumpadDivide) toggle expand node
             // if ((keyCode == 191) || (keyCode == 111)) {
             //     var node = this.selectNode;
@@ -529,36 +536,36 @@ export default class MindMap {
             if (keyCode == 66) {
                 var node = this.selectNode;
                 var text = node.data.text;
+
                 if( (text.substring(0,2)=="**") || 
                     (text.substring(0,2)=="__") )   {
                   // Already bold
                   text = text.substring(2); // Remove leading ** / __
-                  //console.log(text);         // display
+
                   if( (text.substring(text.length-2)=="**") || 
                       (text.substring(text.length-2)=="__") )   {
                     // Remove trailing ** / __
                     text = text.substring(0,text.length-2);
-                    //console.log(text);      // Display
                   }
                   // else: no trailing **
                 }
                 else {// Not in bold
                   text = "**"+text+"**";
-                  //console.log(text);
                 }
-                //console.log("Final: "+text);
+
                 // Set in node text
                 node.data.oldText = node.data.text;
                 node.setText(text);
                 e.preventDefault();
                 e.stopPropagation();
-                //console.log(text+" / "+node.data.text);
             }
+
 
             // Ctrl + I => Italic
             if (keyCode == 73) {
                 var node = this.selectNode;
                 var text = node.data.text;
+
                 if( (  ((text.substring(0,1)=="*") ||
                         (text.substring(0,1)=="_") )        &&   
                        (text.substring(0,2)!="**")          &&
@@ -567,7 +574,7 @@ export default class MindMap {
                     (text.substring(0,3)=="___")                )
                 {// Already italic
                     text = text.substring(1); // Remove leading * / _
-                    console.log(text);         // display
+
                     if( (text.substring(text.length-1)=="*") || 
                         (text.substring(text.length-1)=="_") )   {
                         // Remove trailing * / _
@@ -578,25 +585,31 @@ export default class MindMap {
                 }
                 else {// Not in italic
                     text = "*"+text+"*";
-                    console.log(text);
                 }
-                        // Set in node text
+
+                // Set in node text
                 node.data.oldText = node.data.text;
                 node.setText(text);
                 e.preventDefault();
                 e.stopPropagation();
-                //console.log(text+" / "+node.data.text);
             }
+
+
+            // ctrl + E  center mindmap view
+            if (keyCode == 69) {
+                this.center();
+            }
+
 
             // Move one node above
             if (keyCode == 38 || e.key == 'ArrowUp') {
                 var node = this.selectNode;
-                console.log("Selected node: "+this.selectNode);
                 if(!this.selectNode)
-                {
+                {// No node selected: select root node
                     this.root.select();
                     node = this.selectNode;
                 }
+
                 if( (!node.isEdit)  &&
                     (!node.isRoot)  )
                 {// The node can be moved
@@ -606,21 +619,20 @@ export default class MindMap {
                         type='down';
                     }
                     //else: no special treatment
-
-                    console.log("Move before idx "+(node.getPreviousSibling().getIndex()));
                     this.moveNode(node, node.getPreviousSibling(), type);
                 }
             }
 
+
             // Move one step below
             if (keyCode == 40 || e.key == 'ArrowDown') {
                 var node = this.selectNode;
-                console.log("Selected node: "+this.selectNode);
                 if(!this.selectNode)
-                {
+                {// No node selected: select root node
                     this.root.select();
                     node = this.selectNode;
                 }
+
                 if( (!node.isEdit)  &&
                     (!node.isRoot)  )
                 {// The node can be moved
@@ -630,54 +642,67 @@ export default class MindMap {
                         type='top';
                     }
                     //else: no special treatment
-
-                    console.log("Move after idx "+(node.getNextSibling().getIndex()));
                     this.moveNode(node, node.getNextSibling(), type);
                 }
             }
 
-            // Move as parents node's sibling
+
+            // Ctrl + Left
             if (keyCode == 37 || e.key == 'ArrowLeft') {
                 var node = this.selectNode;
-                console.log("Selected node: "+this.selectNode);
                 if(!this.selectNode)
                 {
                     this.root.select();
                     node = this.selectNode;
                 }
-                if( (!node.isEdit)  &&
-                    (!node.isRoot)  )
-                {// The node can be moved
-                    this.moveNode(node, node.parent, 'down');
+
+                var rootPos = this.root.getPosition();
+                var nodePos = node.getPosition();
+                if(rootPos.x < nodePos.x)
+                {                    
+                    this._moveAsParent(node);
+                }
+                else
+                {
+                    this._moveAsChild(node);
                 }
             }
 
-            // Move as previous node's sibling's child
+
+            // Ctrl + Right
             if (keyCode == 39 || e.key == 'ArrowRight') {
                 var node = this.selectNode;
-                console.log("Selected node: "+this.selectNode);
                 if(!this.selectNode)
                 {
                     this.root.select();
                     node = this.selectNode;
                 }
-                if( (!node.isEdit)  &&
-                    (!node.isRoot)  )
-                {// The node can be moved
-                    console.log("Move as a child of idx "+(node.getPreviousSibling().getIndex()));
-                    this.moveNode(node, node.getPreviousSibling(), 'child-right');
+
+                var rootPos = this.root.getPosition();
+                var nodePos = node.getPosition();
+                if(rootPos.x < nodePos.x)
+                {                    
+                    this._moveAsChild(node);
+                }
+                else
+                {
+                    this._moveAsParent(node);
                 }
             }
-            // SG NEW: END
 
 
-            // ctrl + E  center mindmap view
-            if (keyCode == 69) {
-                this.center();
+            // Ctrl + Home : Select root node
+            if (keyCode == 36) {
+                if( (!this.selectNode)          ||
+                    (!this.selectNode.isEdit)   )
+                {// No edition: select root node
+                    this.root.select();
+                    this.center();
+                }
             }
         }
 
-        // SG NEW: START
+
         if (ctrlKey && shiftKey) {          // CTRL + SHIFT key
             //Shift + Ctrl + space: toggle expand node
             if (keyCode == 32) {
@@ -685,11 +710,11 @@ export default class MindMap {
                 this._toggleExpandNode(node);
             }
 
-
             // Ctrl + Shift + B => Old text
             if (keyCode == 66) {
                 var node = this.selectNode;
-                var text = (node.data.oldText as string);
+                // var text = (node.data.oldText as string);
+                var text = (node.data.oldText);
                 node.setText(text);
                 e.preventDefault();
                 e.stopPropagation();
@@ -699,7 +724,8 @@ export default class MindMap {
             // Ctrl + Shift + I => Old text
             if (keyCode == 73) {
                 var node = this.selectNode;
-                var text = (node.data.oldText as string);
+                // var text = (node.data.oldText as string);
+                var text = (node.data.oldText);
                 node.setText(text);
                 e.preventDefault();
                 e.stopPropagation();
@@ -707,7 +733,9 @@ export default class MindMap {
             }
         }
 
+
         if (altKey && !ctrlKey && !shiftKey) {          // Alt key
+
             // Alt + H => Highlight
             if (keyCode == 72) {
                 var node = this.selectNode;
@@ -715,38 +743,97 @@ export default class MindMap {
                 if( text.substring(0,2)=="==")  {
                     // Already highlighted
                     text = text.substring(2); // Remove leading ==
-                    //console.log(text);         // display
+
                     if(text.substring(text.length-2)=="==") {
                     // Remove trailing ==
                     text = text.substring(0,text.length-2);
-                    //console.log(text);      // Display
                     }
                     // else: no trailing ==
                 }
                 else {// Not highlighted
                     text = "=="+text+"==";
-                    //console.log(text);
                 }
-                //console.log("Final: "+text);
+
                 // Set in node text
                 node.data.oldText = node.data.text;
                 node.setText(text);
                 e.preventDefault();
                 e.stopPropagation();
-                //console.log(text+" / "+node.data.text);
             }
+
 
             // Alt + Home : Node info in console
             if (keyCode == 36) {
                 var node = this.selectNode;
                 console.log("Node idx: "+node.getIndex());
-                //console.log("Node list: "+node.getShowNodeList());
 
                 console.log("Previous node idx: "+node.getPreviousSibling().getIndex());
                 console.log("Next node idx: "+node.getNextSibling().getIndex());
             }
+
+            
+            // Alt + PageUp: collapse one level from max displayed level
+            if (keyCode == 33) {
+                if( (!this.selectNode)                                          ||
+                    (this.getMaxDisplayedLevel()>this.selectNode.getLevel())    )
+                {// Collapse only if current selected node would not be hidden
+                    this.setDisplayedLevel(this.getMaxDisplayedLevel()-1);
+                    this.refresh();
+                    this.scale(this.mindScale);
+                }
+            }
+
+
+            // Alt + PageDn: expand one level
+            if (keyCode == 34) {
+                this.setDisplayedLevel(this.getMaxDisplayedLevel()+1);
+                this.refresh();
+                this.scale(this.mindScale);
+            }
         }
 
+
+        if (altKey && !ctrlKey && shiftKey) {           // Alt + Shift key
+
+            // Alt + Shift + PageUp: collapse one level from current node
+            if (keyCode == 33) {
+                this.setDisplayedLevel(this.selectNode.getLevel()-1);
+                this.refresh();
+            }
+            
+            
+            // Alt + PageDn: expand one level
+            if (keyCode == 34) {
+                this.setDisplayedLevel(this.selectNode.getLevel()+1);
+                this.refresh();
+            }
+            
+        }
+
+    }
+
+
+    _moveAsParent(node: INode) {
+        if( (!node.isEdit)          &&
+            (!node.isRoot)          &&
+            (node.getLevel() > 1)   )
+        {// The node can be moved
+            this.moveNode(node, node.parent, 'down');
+        }
+
+        return;
+    }
+
+
+    _moveAsChild(node: INode) {
+        if( (!node.isEdit)  &&
+            (!node.isRoot)  )
+        {// The node can be moved
+            this.moveNode(node, node.getPreviousSibling(), 'child-right');
+        }
+
+
+        return;
     }
 
 
@@ -763,8 +850,10 @@ export default class MindMap {
                 });
             }
         }
+
+        return;
     }
-    // SG NEW: END
+
 
     _selectNode(node: INode, direct: string) {
         if (!node) {
@@ -1275,7 +1364,7 @@ export default class MindMap {
         }
 
         if (type == 'top' || type == 'left' ||type == 'down' || type == 'right') {  
-            console.log("Move node, type: "+type);
+            // console.log("Move node, type: "+type);
             this.execute('moveNode', { type: 'siblings', node: dragNode, oldParent: dragNode.parent, dropNode, direct: type })
         }
         else if (type.indexOf('child') > -1) {
@@ -1387,6 +1476,93 @@ export default class MindMap {
 
         this.scale(oldScale);
     }
+
+
+    _resetMaxDisplayedLevel() {
+        this.dispLevel = 0;
+        return;
+    }
+
+
+    _getMaxDisplayedLevel(node: INode)
+    {// Returns the highest displayed level.
+     // Use getMaxDisplayedLevel (without _).
+        var currentLevel = 0;
+
+        if( (node.getLevel() > this.dispLevel)  &&
+            (node.isShow())                     )
+        {// Displayed node with higher level
+            this.dispLevel = node.getLevel();
+        }
+
+        if(!node.isLeaf())
+        {// The node has children
+            node.children.forEach((n) => {
+                this._getMaxDisplayedLevel(n);
+            });
+        }
+
+        return;
+    }
+
+
+    getMaxDisplayedLevel()
+    {// Returns the highest displayed level.
+        this._resetMaxDisplayedLevel();
+        this._getMaxDisplayedLevel(this.root);
+
+        // console.log(this.dispLevel);
+
+        return this.dispLevel;
+    }
+
+
+    _setDisplayedLevel(node: INode, level:number)
+    {// Display nodes whose level is <= number
+        var currentLevel = 0;
+
+        if( (node.getLevel()<level) )   
+        {// Current level is to be displayed
+            node.expand();
+            // console.log("Expand level "+node.getLevel());
+            if(!node.isLeaf())
+            {// The node has children
+                node.children.forEach((n) => {
+                    this._setDisplayedLevel(n, level);
+                });
+            }
+        }
+        else{
+            node.collapse();
+            // console.log("Collapse level "+node.getLevel());
+        }
+
+        return;
+    }
+
+
+    setDisplayedLevel(level:number)
+    {// Display nodes whose level is <= number
+        var currentLevel = 0;
+        // console.log("Requested level: "+level);
+        
+        if(level>0) {
+            var minLevel = 0;
+
+            this.root.expand();
+            this.root.children.forEach((n) => {
+                this._setDisplayedLevel(n, level);
+            });
+        }
+        else
+        {
+            // console.log("Root collapse")
+            this.root.collapse();
+        }
+
+        return;
+    }
+
 
     _setMindScalePointer() {
         this.scalePointer = [];
