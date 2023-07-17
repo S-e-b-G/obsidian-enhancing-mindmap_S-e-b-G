@@ -547,6 +547,9 @@ class Node {
         }
         return level;
     }
+    getIndex() {
+        return this.parent.children.indexOf(this);
+    }
     getChildren() {
         return this.children;
     }
@@ -611,6 +614,68 @@ class Node {
         else {
             return [];
         }
+    }
+    getPreviousSibling() {
+        var nodeIdx = this.getIndex();
+        var returnedNode = this;
+        var searchedIdx = nodeIdx - 1;
+        if (nodeIdx == 0) { // This is the first sibling -> return the last one.
+            searchedIdx = this.parent.children.length - 1;
+        }
+        // else: searchedIdx already set.
+        // Search the sibling
+        var sibs = this.getSiblings();
+        sibs.forEach((sib) => {
+            if (sib.getIndex() == searchedIdx) {
+                returnedNode = sib;
+            }
+            // else: not the previous sibling
+        });
+        return returnedNode;
+    }
+    getNextSibling() {
+        var nodeIdx = this.getIndex();
+        var returnedNode = this;
+        var searchedIdx = nodeIdx + 1;
+        if (nodeIdx >= this.parent.children.length - 1) { // This is the last sibling -> return the first one.
+            searchedIdx = 0;
+        }
+        // else: searchedIdx already set.
+        // Search the sibling
+        var sibs = this.getSiblings();
+        sibs.forEach((sib) => {
+            if (sib.getIndex() == searchedIdx) {
+                returnedNode = sib;
+            }
+            // else: not the next sibling
+        });
+        return returnedNode;
+    }
+    getFirstSibling() {
+        var returnedNode = this;
+        var searchedIdx = 0;
+        // Search the sibling
+        var sibs = this.getSiblings();
+        sibs.forEach((sib) => {
+            if (sib.getIndex() == searchedIdx) {
+                returnedNode = sib;
+            }
+            // else: not the next sibling
+        });
+        return returnedNode;
+    }
+    getLastSibling() {
+        var returnedNode = this;
+        var searchedIdx = this.parent.children.length - 1;
+        // Search the sibling
+        var sibs = this.getSiblings();
+        sibs.forEach((sib) => {
+            if (sib.getIndex() == searchedIdx) {
+                returnedNode = sib;
+            }
+            // else: not the next sibling
+        });
+        return returnedNode;
     }
     isLeaf() {
         return !this.children.length;
@@ -8361,10 +8426,12 @@ class MindMap {
                 e.preventDefault();
                 e.stopPropagation();
                 var node = this.selectNode;
-                node.select();
-                node.mindmap.editNode = null;
-                node.cancelEdit();
-                this.undo();
+                if (node && node.isEdit) {
+                    node.select();
+                    node.mindmap.editNode = null;
+                    node.cancelEdit();
+                    this.undo();
+                }
             }
             // SG NEW: END
             // up
@@ -8482,24 +8549,67 @@ class MindMap {
             // Move one node above
             if (keyCode == 38 || e.key == 'ArrowUp') {
                 var node = this.selectNode;
-                if (!node.isEdit) ;
+                console.log("Selected node: " + this.selectNode);
+                if (!this.selectNode) {
+                    this.root.select();
+                    node = this.selectNode;
+                }
+                if ((!node.isEdit) &&
+                    (!node.isRoot)) { // The node can be moved
+                    var type = 'top';
+                    if (node.getIndex() == 0) { // First sibling: move BELOW "previous" (=last) node
+                        type = 'down';
+                    }
+                    //else: no special treatment
+                    console.log("Move before idx " + (node.getPreviousSibling().getIndex()));
+                    this.moveNode(node, node.getPreviousSibling(), type);
+                }
             }
             // Move one step below
             if (keyCode == 40 || e.key == 'ArrowDown') {
                 var node = this.selectNode;
-                if (!node.isEdit) ;
+                console.log("Selected node: " + this.selectNode);
+                if (!this.selectNode) {
+                    this.root.select();
+                    node = this.selectNode;
+                }
+                if ((!node.isEdit) &&
+                    (!node.isRoot)) { // The node can be moved
+                    var type = 'down';
+                    if (node.getIndex() == node.parent.children.length - 1) { // Last sibling: move ABOVE "next" (=first) node
+                        type = 'top';
+                    }
+                    //else: no special treatment
+                    console.log("Move after idx " + (node.getNextSibling().getIndex()));
+                    this.moveNode(node, node.getNextSibling(), type);
+                }
             }
-            // Move as parents node's sibling  === OK ===
+            // Move as parents node's sibling
             if (keyCode == 37 || e.key == 'ArrowLeft') {
                 var node = this.selectNode;
-                if (!node.isEdit) {
+                console.log("Selected node: " + this.selectNode);
+                if (!this.selectNode) {
+                    this.root.select();
+                    node = this.selectNode;
+                }
+                if ((!node.isEdit) &&
+                    (!node.isRoot)) { // The node can be moved
                     this.moveNode(node, node.parent, 'down');
                 }
             }
             // Move as previous node's sibling's child
             if (keyCode == 39 || e.key == 'ArrowRight') {
                 var node = this.selectNode;
-                if (!node.isEdit) ;
+                console.log("Selected node: " + this.selectNode);
+                if (!this.selectNode) {
+                    this.root.select();
+                    node = this.selectNode;
+                }
+                if ((!node.isEdit) &&
+                    (!node.isRoot)) { // The node can be moved
+                    console.log("Move as a child of idx " + (node.getPreviousSibling().getIndex()));
+                    this.moveNode(node, node.getPreviousSibling(), 'child-right');
+                }
             }
             // SG NEW: END
             // ctrl + E  center mindmap view
@@ -8560,6 +8670,14 @@ class MindMap {
                 e.preventDefault();
                 e.stopPropagation();
                 //console.log(text+" / "+node.data.text);
+            }
+            // Alt + Home : Node info in console
+            if (keyCode == 36) {
+                var node = this.selectNode;
+                console.log("Node idx: " + node.getIndex());
+                //console.log("Node list: "+node.getShowNodeList());
+                console.log("Previous node idx: " + node.getPreviousSibling().getIndex());
+                console.log("Next node idx: " + node.getNextSibling().getIndex());
             }
         }
     }
@@ -9047,6 +9165,7 @@ class MindMap {
             dropNode.expand();
         }
         if (type == 'top' || type == 'left' || type == 'down' || type == 'right') {
+            console.log("Move node, type: " + type);
             this.execute('moveNode', { type: 'siblings', node: dragNode, oldParent: dragNode.parent, dropNode, direct: type });
         }
         else if (type.indexOf('child') > -1) {

@@ -333,6 +333,12 @@ export default class Node {
         return level;
     }
 
+
+    getIndex() {
+        return this.parent.children.indexOf(this);
+    }
+
+
     getChildren(){
         return this.children;
     }
@@ -409,6 +415,87 @@ export default class Node {
             return [];
         }
     }
+
+
+    getPreviousSibling() {
+        var nodeIdx = this.getIndex();
+        var returnedNode = this;
+        
+        var searchedIdx = nodeIdx-1;
+        if(nodeIdx == 0)
+        {// This is the first sibling -> return the last one.
+            searchedIdx = this.parent.children.length-1;
+        }
+        // else: searchedIdx already set.
+
+        // Search the sibling
+        var sibs = this.getSiblings();
+        sibs.forEach((sib) => {
+            if (sib.getIndex() == searchedIdx) {
+                returnedNode = sib;
+            }
+            // else: not the previous sibling
+        })
+        
+        return returnedNode;
+    }
+    
+    getNextSibling() {
+        var nodeIdx = this.getIndex();
+        var returnedNode = this;
+
+        var searchedIdx = nodeIdx+1;
+
+        if(nodeIdx >= this.parent.children.length-1)
+        {// This is the last sibling -> return the first one.
+            searchedIdx = 0;
+        }
+        // else: searchedIdx already set.
+
+        // Search the sibling
+        var sibs = this.getSiblings();
+        sibs.forEach((sib) => {
+            if (sib.getIndex() == searchedIdx) {
+                returnedNode = sib;
+            }
+            // else: not the next sibling
+        })
+
+        return returnedNode;
+    }
+
+    getFirstSibling() {
+        var returnedNode = this;
+        var searchedIdx = 0;
+
+        // Search the sibling
+        var sibs = this.getSiblings();
+        sibs.forEach((sib) => {
+            if (sib.getIndex() == searchedIdx) {
+                returnedNode = sib;
+            }
+            // else: not the next sibling
+        })
+
+        return returnedNode;
+    }
+
+    getLastSibling() {
+        var returnedNode = this;
+        var searchedIdx = this.parent.children.length-1;
+
+        // Search the sibling
+        var sibs = this.getSiblings();
+        sibs.forEach((sib) => {
+            if (sib.getIndex() == searchedIdx) {
+                returnedNode = sib;
+            }
+            // else: not the next sibling
+        })
+
+        return returnedNode;
+    }
+
 
     isLeaf() {
         return !this.children.length

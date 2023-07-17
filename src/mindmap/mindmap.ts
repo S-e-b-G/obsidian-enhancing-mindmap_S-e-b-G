@@ -457,10 +457,12 @@ export default class MindMap {
                 e.preventDefault();
                 e.stopPropagation();
                 var node = this.selectNode;
-                node.select();
-                node.mindmap.editNode = null;
-                node.cancelEdit();
-                this.undo();
+                if (node && node.isEdit) {
+                    node.select();
+                    node.mindmap.editNode = null;
+                    node.cancelEdit();
+                    this.undo();
+                }
             }
             // SG NEW: END
 
@@ -589,34 +591,81 @@ export default class MindMap {
             // Move one node above
             if (keyCode == 38 || e.key == 'ArrowUp') {
                 var node = this.selectNode;
-                if (!node.isEdit){
-                    //this.moveNode(node, node.parent, 'down');
-                    // this.moveNode(node, node.prevSibling, 'top');
-                    //node.move(0,-1);
+                console.log("Selected node: "+this.selectNode);
+                if(!this.selectNode)
+                {
+                    this.root.select();
+                    node = this.selectNode;
+                }
+                if( (!node.isEdit)  &&
+                    (!node.isRoot)  )
+                {// The node can be moved
+                    var type='top';
+                    if(node.getIndex() == 0)
+                    {// First sibling: move BELOW "previous" (=last) node
+                        type='down';
+                    }
+                    //else: no special treatment
+
+                    console.log("Move before idx "+(node.getPreviousSibling().getIndex()));
+                    this.moveNode(node, node.getPreviousSibling(), type);
                 }
             }
+
             // Move one step below
             if (keyCode == 40 || e.key == 'ArrowDown') {
                 var node = this.selectNode;
-                if (!node.isEdit){
-                    // this.moveNode(node, node.nextSibling, 'down');
-                    // this.moveNode(node,0,1);
-                    //node.move(0,1);
+                console.log("Selected node: "+this.selectNode);
+                if(!this.selectNode)
+                {
+                    this.root.select();
+                    node = this.selectNode;
+                }
+                if( (!node.isEdit)  &&
+                    (!node.isRoot)  )
+                {// The node can be moved
+                    var type='down';
+                    if(node.getIndex() == node.parent.children.length-1)
+                    {// Last sibling: move ABOVE "next" (=first) node
+                        type='top';
+                    }
+                    //else: no special treatment
+
+                    console.log("Move after idx "+(node.getNextSibling().getIndex()));
+                    this.moveNode(node, node.getNextSibling(), type);
                 }
             }
-            // Move as parents node's sibling  === OK ===
+
+            // Move as parents node's sibling
             if (keyCode == 37 || e.key == 'ArrowLeft') {
                 var node = this.selectNode;
-                if (!node.isEdit){
+                console.log("Selected node: "+this.selectNode);
+                if(!this.selectNode)
+                {
+                    this.root.select();
+                    node = this.selectNode;
+                }
+                if( (!node.isEdit)  &&
+                    (!node.isRoot)  )
+                {// The node can be moved
                     this.moveNode(node, node.parent, 'down');
                 }
             }
+
             // Move as previous node's sibling's child
             if (keyCode == 39 || e.key == 'ArrowRight') {
                 var node = this.selectNode;
-                if (!node.isEdit){
-                    // this.moveNode(node, node.prevSibling, 'right');
-                    //node.move(1,0);
+                console.log("Selected node: "+this.selectNode);
+                if(!this.selectNode)
+                {
+                    this.root.select();
+                    node = this.selectNode;
+                }
+                if( (!node.isEdit)  &&
+                    (!node.isRoot)  )
+                {// The node can be moved
+                    console.log("Move as a child of idx "+(node.getPreviousSibling().getIndex()));
+                    this.moveNode(node, node.getPreviousSibling(), 'child-right');
                 }
             }
             // SG NEW: END
@@ -685,6 +734,16 @@ export default class MindMap {
                 e.preventDefault();
                 e.stopPropagation();
                 //console.log(text+" / "+node.data.text);
+            }
+
+            // Alt + Home : Node info in console
+            if (keyCode == 36) {
+                var node = this.selectNode;
+                console.log("Node idx: "+node.getIndex());
+                //console.log("Node list: "+node.getShowNodeList());
+
+                console.log("Previous node idx: "+node.getPreviousSibling().getIndex());
+                console.log("Next node idx: "+node.getNextSibling().getIndex());
             }
         }
 
@@ -1215,8 +1274,9 @@ export default class MindMap {
             dropNode.expand();
         }
 
-        if (type == 'top' || type == 'left' ||type == 'down' || type == 'right') {   
-           this.execute('moveNode', { type: 'siblings', node: dragNode, oldParent: dragNode.parent, dropNode, direct: type })
+        if (type == 'top' || type == 'left' ||type == 'down' || type == 'right') {  
+            console.log("Move node, type: "+type);
+            this.execute('moveNode', { type: 'siblings', node: dragNode, oldParent: dragNode.parent, dropNode, direct: type })
         }
         else if (type.indexOf('child') > -1) {
             var typeArr = type.split('-');
