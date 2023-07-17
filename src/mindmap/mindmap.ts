@@ -34,6 +34,8 @@ export default class MindMap {
     path?: string;
     editNode?: INode;
     selectNode?: INode;
+    // selectingNodes?:boolean;
+    // selectedNodes?: INode[];
     setting: Setting;
     data: INodeData;
     drag?: boolean;
@@ -252,6 +254,7 @@ export default class MindMap {
     }
 
     clearSelectNode() {
+        // console.log("-> clearSelectNode");
         if (this.selectNode) {
             this.selectNode.unSelect();
             this.selectNode = null
@@ -262,6 +265,26 @@ export default class MindMap {
             }
             this.editNode = null;
         }
+
+        // if(this.selectingNodes)
+        // {// Add the node to the selectedNodes
+        //     this.selectedNodes.push(this.selectNode);
+        // }
+        // else {
+        //     this.selectedNodes = [];
+        // }
+        // console.log(this.selectedNodes.length+" selected: "+this.selectedNodes);
+
+        // if (this.selectNode) {
+        //     this.selectNode.unSelect();
+        //     this.selectNode = null
+        // }
+        // if (this.editNode) {
+        //     if(this.editNode.isEdit){
+        //         this.editNode.cancelEdit();
+        //     }
+        //     this.editNode = null;
+        // }
     }
 
 
@@ -342,6 +365,13 @@ export default class MindMap {
         var shiftKey = e.shiftKey;
         var altKey = e.altKey;
 
+        // if (ctrlKey) {                         // Shift -> Selecting
+        //     // ctrl -> selecting
+        //     this.selectingNodes = true;
+        // } else {
+        //     this.selectingNodes = false;
+        // }
+
         if (!ctrlKey && !shiftKey) {            // No special key
             // tab
             // tab (OK) / Insert (OK)
@@ -400,6 +430,14 @@ export default class MindMap {
         var ctrlKey = e.ctrlKey || e.metaKey;
         var shiftKey = e.shiftKey;
         var altKey = e.altKey;
+
+        // if (ctrlKey) {                         // Shift -> Selecting
+        //     // Ctrl -> selecting
+        //     this.selectingNodes = true;
+        // } else {
+        //     this.selectingNodes = false;
+        // }
+
         if (!ctrlKey && !shiftKey) {            // No special key
             //enter 
             if (keyCode == 13 || e.key =='Enter') {
@@ -681,7 +719,11 @@ export default class MindMap {
                 var rootPos = this.root.getPosition();
                 var nodePos = node.getPosition();
                 if(rootPos.x < nodePos.x)
-                {                    
+                {
+                    // this.selectedNodes.forEach((n:INode) => {
+                    //     this._moveAsChild(n);
+                    //     console.log("Move index"+n.getIndex());
+                    // });
                     this._moveAsChild(node);
                 }
                 else
@@ -863,64 +905,88 @@ export default class MindMap {
         var minDis: number;
         var waitNode: INode = null;
         var pos = node.getPosition();
+        var level = node.getLevel();
         var mind = this;
 
 
         mind.traverseDF((n: INode) => {
             var p = n.getPosition();
+            var l = n.getLevel();
             var dx = Math.abs(p.x - pos.x);
             var dy = Math.abs(p.y - pos.y);
             var dis = Math.sqrt(dx * dx + dy * dy);
             switch (direct) {
                 case "right":
-                    if (p.x > pos.x) {
-                        if (minDis) {
-                            if (minDis > dis) {
+                    if( ((pos.x>this.root.getPosition().x)  &&
+                         (l == level+1)                     )   ||
+                        ((pos.x<this.root.getPosition().x)  &&
+                         (l == level-1)                     )   ||
+                        ((level == 0)                       &&
+                         l==1)                                  )
+                    {// The tested node is at the correct level
+                        if (p.x > pos.x) {
+                            if (minDis) {
+                                if (minDis > dis) {
+                                    minDis = dis;
+                                    waitNode = n;
+                                }
+                            } else {
                                 minDis = dis;
                                 waitNode = n;
                             }
-                        } else {
-                            minDis = dis;
-                            waitNode = n;
                         }
                     }
                     break;
                 case "left":
-                    if (p.x < pos.x) {
-                        if (minDis) {
-                            if (minDis > dis) {
+                    if( ((pos.x>this.root.getPosition().x)  &&
+                         (l == level-1)                     )   ||
+                        ((pos.x<this.root.getPosition().x)  &&
+                         (l == level+1)                     )   ||
+                         ((level == 0)                      &&
+                          l==1)                                 )
+                    {// The tested node is at the correct level
+                        if (p.x < pos.x) {
+                            if (minDis) {
+                                if (minDis > dis) {
+                                    minDis = dis;
+                                    waitNode = n;
+                                }
+                            } else {
                                 minDis = dis;
                                 waitNode = n;
                             }
-                        } else {
-                            minDis = dis;
-                            waitNode = n;
                         }
                     }
                     break;
                 case "up":
                     if (p.y < pos.y) {
-                        if (minDis) {
-                            if (minDis > dis) {
+                        if(level == l)
+                        {
+                            if (minDis) {
+                                if (minDis > dis) {
+                                    minDis = dis;
+                                    waitNode = n;
+                                }
+                            } else {
                                 minDis = dis;
                                 waitNode = n;
                             }
-                        } else {
-                            minDis = dis;
-                            waitNode = n;
                         }
                     }
                     break;
                 case "down":
                     if (p.y > pos.y) {
-                        if (minDis) {
-                            if (minDis > dis) {
+                        if(level == l)
+                        {
+                            if (minDis) {
+                                if (minDis > dis) {
+                                    minDis = dis;
+                                    waitNode = n;
+                                }
+                            } else {
                                 minDis = dis;
                                 waitNode = n;
                             }
-                        } else {
-                            minDis = dis;
-                            waitNode = n;
                         }
                     }
                     break;
@@ -928,6 +994,7 @@ export default class MindMap {
         });
 
         if (waitNode) {
+            // console.log("mind.clearSelectNode();");
             mind.clearSelectNode();
             waitNode.select();
         }
@@ -991,16 +1058,20 @@ export default class MindMap {
             if (targetEl.closest('.mm-node')) {
                 var id = targetEl.closest('.mm-node').getAttribute('data-id');
                 var node = this.getNodeById(id);
+                // console.log("targetEl.closest('.mm-node'))");
                 if (!node.isSelect) {
+                    // console.log("  if (!node.isSelect)");
                     this.clearSelectNode();
                     this.selectNode = node;
                     this.selectNode?.select();
-                    this._menuDom.style.display='block';
+                    // this._menuDom.style.display='block';
+                    this._menuDom.style.display='none';
                     var box = this.selectNode.getBox();
-                    this._menuDom.style.left = `${box.x + box.width + 10}px`;
-                    this._menuDom.style.top = `${box.y + box.height/2 - 14}px`;
+                    // this._menuDom.style.left = `${box.x + box.width + 10}px`;
+                    // this._menuDom.style.top = `${box.y + box.height/2 - 14}px`;
                 }
             } else {
+                // console.log("  targetEl... else {");
                 this.clearSelectNode();
                 this._menuDom.style.display='none';
             }
