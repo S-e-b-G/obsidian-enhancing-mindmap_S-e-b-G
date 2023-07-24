@@ -271,6 +271,7 @@ export default class Node {
         if(!this.containEl.classList.contains('mm-edit-node')){
             this.containEl.classList.add('mm-edit-node')
         }
+
     }
 
     selectText() {
@@ -290,6 +291,7 @@ export default class Node {
     }
 
     cancelEdit(){
+        console.log("CancelEdit");
         var text = this.contentEl.innerText.trim()||'';
         this.data.text = text;
         this.contentEl.innerText = '';
