@@ -337,7 +337,10 @@ export default class Node {
 
 
     getIndex() {
-        return this.parent.children.indexOf(this);
+        var l_index = 0;
+        if(!this.isRoot)
+        { l_index = this.parent.children.indexOf(this); }
+        return l_index;
     }
 
 

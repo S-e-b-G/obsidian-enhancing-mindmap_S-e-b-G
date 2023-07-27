@@ -379,6 +379,7 @@ export default class MindMap {
                 e.preventDefault();
                 e.stopPropagation();
             }
+
             // Space
             if (keyCode == 32) {
                 var node = this.selectNode;
@@ -439,7 +440,7 @@ export default class MindMap {
         // }
 
         if (!ctrlKey && !shiftKey) {            // No special key
-            //enter 
+            // Enter 
             if (keyCode == 13 || e.key =='Enter') {
                 var node = this.selectNode;
                 if(node) {// A node is selected
@@ -457,72 +458,85 @@ export default class MindMap {
                     }
                     else {// Editing mode => end edit mode
                         //node.cancelEdit();
+
                         this.clearSelectNode();
                         node.select();
                         node.mindmap.editNode=null;
+                        //this.selectNode.unSelect();
                     }
                 }
+                //else: no node selected: nothing to do
             }
 
             //delete
             if (keyCode == 46 || e.key == 'Delete' || e.key == 'Backspace') {
                 var node = this.selectNode;
-                if (!node.isRoot && node && !node.isEdit) {
+                if (node && !node.isRoot && !node.isEdit) {
                     e.preventDefault();
                     e.stopPropagation();
                     node.mindmap.execute("deleteNodeAndChild", { node });
                     this._menuDom.style.display='none';
                 }
+                //else: Deletion makes no sense
             }
 
 
-            //tab
+            // Tab / Insert
             if (keyCode == 9 || keyCode == 45 || e.key == 'Tab') {
                 e.preventDefault();
                 e.stopPropagation();
                 var node = this.selectNode;
-                if (node && !node.isEdit) {
-                    if (!node.isExpand) {
-                        node.expand();
+                if(node) {
+                    if (!node.isEdit) {// Not editing
+                        if (!node.isExpand) {
+                            node.expand();
+                        }
+                        node.mindmap.execute("addChildNode", { parent: node });
+                        this._menuDom.style.display='none';
+                    } else{
+                        // node.cancelEdit();
+                        // node.select();
+                        // node.mindmap.editNode=null;
+                        
+                        // this.selectNode.unSelect();
+                        this.clearSelectNode();
+                        node.select();
+                        node.mindmap.editNode=null;
                     }
-                    node.mindmap.execute("addChildNode", { parent: node });
-                    this._menuDom.style.display='none';
-                } else if (node && node.isEdit) {
-                    node.cancelEdit();
-                    node.select();
-                    node.mindmap.editNode=null;
                 }
+                //else: no node selected -> nothing to do
             }
 
                 // Escape
             if (keyCode == 27) {
                 e.preventDefault();
                 e.stopPropagation();
+
                 var node = this.selectNode;
                 if (node && node.isEdit) {
-                    // node.select();
-                    // node.mindmap.editNode = null;
-                    // //node.cancelEdit();
-                    // //this.undo();
-                    this.clearSelectNode();
                     node.select();
-                    node.mindmap.editNode=null;
-            }
+                    node.mindmap.editNode = null;
+                    node.cancelEdit();
+                    this.undo();
+
+                    // this.clearSelectNode();
+                    // node.select();
+                    // node.mindmap.editNode=null;
+                    //this.selectNode.unSelect();
+                }
             }
 
             // up
             if (keyCode == 38 || e.key == 'ArrowUp') {
                 var node = this.selectNode;
-                if (node && !node.isEdit) {
-                    this._selectNode(node, "up");
-                }
+                if (node && !node.isEdit)
+                { this._selectNode(node, "up"); }
             }
 
             if (keyCode == 40 || e.key == 'ArrowDown') {
                 var node = this.selectNode;
-                if (node && !node.isEdit) {
-                    this._selectNode(node, "down");
-                }
+                if (node && !node.isEdit)
+                { this._selectNode(node, "down"); }
                 // else if(!node) {
                 //     // n.select();
                 //     this.selectNode = 0;
@@ -532,14 +546,53 @@ export default class MindMap {
             if (keyCode == 39 || e.key == 'ArrowRight') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._selectNode(node, "right");
+                    var rootPos = this.root.getPosition();
+                    var nodePos = node.getPosition();
+                    if(rootPos.x > nodePos.x)
+                    {// Node on left side of the mindmap
+                        node.unSelect();
+                        node.parent.select();
+                    }
+                    else
+                    {
+                        var node = this.selectNode;
+                        //this.selectNode.expand();
+                        node.mindmap.execute('expandNode', {
+                            node
+                        });
+                        this._selectNode(node, "right");
+                        /*if(this.selectNode.isHide)
+                        { this.selectNode.parent.expand(); }*/
+                        //this.selectNode.select();
+                        //this.refresh();
+
+                    }
                 }
             }
 
             if (keyCode == 37 || e.key == 'ArrowLeft') {
                 var node = this.selectNode;
                 if (node && !node.isEdit) {
-                    this._selectNode(node, "left");
+                    var rootPos = this.root.getPosition();
+                    var nodePos = node.getPosition();
+                    if(rootPos.x < nodePos.x)
+                    {// Node on right side of the mindmap
+                        node.unSelect();
+                        node.parent.select();
+                    }
+                    else
+                    {
+                        var node = this.selectNode;
+                        //this.selectNode.expand();
+                        node.mindmap.execute('expandNode', {
+                            node
+                        });
+                        this._selectNode(node, "left");
+                        /*if(this.selectNode.isHide)
+                        { this.selectNode.parent.expand(); }*/
+                        //this.selectNode.select();
+                        //this.refresh();
+                    }
                 }
             }
 
@@ -585,64 +638,74 @@ export default class MindMap {
 
             // Ctrl + B => Bold
             if (keyCode == 66) {
-                var node = this.selectNode;
-                var text = node.data.text;
+                if(this.selectNode) {
+                    var node = this.selectNode;
+                    if(node.isEdit)
+                    { this.selectNode.unSelect(); }
 
-                if( (text.substring(0,2)=="**") || 
-                    (text.substring(0,2)=="__") )   {
-                  // Already bold
-                  text = text.substring(2); // Remove leading ** / __
+                    var text = node.data.text;
+                    if( (text.substring(0,2)=="**") || 
+                        (text.substring(0,2)=="__") )
+                    {// Already bold
+                        text = text.substring(2); // Remove leading ** / __
 
-                  if( (text.substring(text.length-2)=="**") || 
-                      (text.substring(text.length-2)=="__") )   {
-                    // Remove trailing ** / __
-                    text = text.substring(0,text.length-2);
-                  }
-                  // else: no trailing **
+                        if( (text.substring(text.length-2)=="**") || 
+                            (text.substring(text.length-2)=="__") )   {
+                            // Remove trailing ** / __
+                            text = text.substring(0,text.length-2);
+                        }
+                        // else: no trailing **
+                    }
+                    else {// Not in bold
+                        text = "**"+text+"**";
+                    }
+
+                    // Set in node text
+                    node.data.oldText = node.data.text;
+                    node.setText(text);
+                    e.preventDefault();
+                    e.stopPropagation();
                 }
-                else {// Not in bold
-                  text = "**"+text+"**";
-                }
-
-                // Set in node text
-                node.data.oldText = node.data.text;
-                node.setText(text);
-                e.preventDefault();
-                e.stopPropagation();
+                //else: no node selected: nothing to do
             }
 
 
             // Ctrl + I => Italic
             if (keyCode == 73) {
-                var node = this.selectNode;
-                var text = node.data.text;
+                if(this.selectNode) {
+                    var node = this.selectNode;
+                    if(node.isEdit)
+                    { this.selectNode.unSelect(); }
 
-                if( (  ((text.substring(0,1)=="*") ||
-                        (text.substring(0,1)=="_") )        &&   
-                       (text.substring(0,2)!="**")          &&
-                       (text.substring(0,2)!="__")          )   ||
-                    (text.substring(0,3)=="***")                ||
-                    (text.substring(0,3)=="___")                )
-                {// Already italic
-                    text = text.substring(1); // Remove leading * / _
+                    var text = node.data.text;
+                    if( (  ((text.substring(0,1)=="*") ||
+                            (text.substring(0,1)=="_") )        &&   
+                        (text.substring(0,2)!="**")          &&
+                        (text.substring(0,2)!="__")          )   ||
+                        (text.substring(0,3)=="***")                ||
+                        (text.substring(0,3)=="___")                )
+                    {// Already italic
+                        text = text.substring(1); // Remove leading * / _
 
-                    if( (text.substring(text.length-1)=="*") || 
-                        (text.substring(text.length-1)=="_") )   {
-                        // Remove trailing * / _
-                        text = text.substring(0,text.length-1);
-                        console.log(text);      // Display
+                        if( (text.substring(text.length-1)=="*") || 
+                            (text.substring(text.length-1)=="_") )   {
+                            // Remove trailing * / _
+                            text = text.substring(0,text.length-1);
+                            console.log(text);      // Display
+                        }
+                        // else: no trailing *
                     }
-                    // else: no trailing *
-                }
-                else {// Not in italic
-                    text = "*"+text+"*";
-                }
+                    else {// Not in italic
+                        text = "*"+text+"*";
+                    }
 
-                // Set in node text
-                node.data.oldText = node.data.text;
-                node.setText(text);
-                e.preventDefault();
-                e.stopPropagation();
+                    // Set in node text
+                    node.data.oldText = node.data.text;
+                    node.setText(text);
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                //else: no node selected: nothing to do
             }
 
 
@@ -655,14 +718,13 @@ export default class MindMap {
             // Move one node above
             if (keyCode == 38 || e.key == 'ArrowUp') {
                 var node = this.selectNode;
-                if(!this.selectNode)
+                if(!node)
                 {// No node selected: select root node
                     this.root.select();
                     node = this.selectNode;
                 }
-
-                if( (!node.isEdit)  &&
-                    (!node.isRoot)  )
+                else if((!node.isEdit)  &&
+                        (!node.isRoot)  )
                 {// The node can be moved
                     var type='top';
                     if(node.getIndex() == 0)
@@ -678,14 +740,13 @@ export default class MindMap {
             // Move one step below
             if (keyCode == 40 || e.key == 'ArrowDown') {
                 var node = this.selectNode;
-                if(!this.selectNode)
+                if(!node)
                 {// No node selected: select root node
                     this.root.select();
                     node = this.selectNode;
                 }
-
-                if( (!node.isEdit)  &&
-                    (!node.isRoot)  )
+                else if((!node.isEdit)  &&
+                        (!node.isRoot)  )
                 {// The node can be moved
                     var type='down';
                     if(node.getIndex() == node.parent.children.length-1)
@@ -701,21 +762,22 @@ export default class MindMap {
             // Ctrl + Left
             if (keyCode == 37 || e.key == 'ArrowLeft') {
                 var node = this.selectNode;
-                if(!this.selectNode)
+                if(!node)
                 {// No node selected
                     this.root.select();
                     node = this.selectNode;
                 }
-
-                var rootPos = this.root.getPosition();
-                var nodePos = node.getPosition();
-                if(rootPos.x < nodePos.x)
-                {                    
-                    this._moveAsParent(node);
-                }
-                else
-                {
-                    this._moveAsChild(node);
+                else {
+                    var rootPos = this.root.getPosition();
+                    var nodePos = node.getPosition();
+                    if(rootPos.x < nodePos.x)
+                    {                    
+                        this._moveAsParent(node);
+                    }
+                    else
+                    {
+                        this._moveAsChild(node);
+                    }
                 }
             }
 
@@ -723,24 +785,25 @@ export default class MindMap {
             // Ctrl + Right
             if (keyCode == 39 || e.key == 'ArrowRight') {
                 var node = this.selectNode;
-                if(!this.selectNode)
+                if(!node)
                 {// No node selected
                     this.root.select();
                     node = this.selectNode;
                 }
-
-                var rootPos = this.root.getPosition();
-                var nodePos = node.getPosition();
-                if(rootPos.x < nodePos.x)
-                {
-                    // this.selectedNodes.forEach((n:INode) => {
-                    //     this._moveAsChild(n);
-                    // });
-                    this._moveAsChild(node);
-                }
-                else
-                {
-                    this._moveAsParent(node);
+                else {
+                    var rootPos = this.root.getPosition();
+                    var nodePos = node.getPosition();
+                    if(rootPos.x < nodePos.x)
+                    {
+                        // this.selectedNodes.forEach((n:INode) => {
+                        //     this._moveAsChild(n);
+                        // });
+                        this._moveAsChild(node);
+                    }
+                    else
+                    {
+                        this._moveAsParent(node);
+                    }
                 }
             }
 
@@ -765,30 +828,35 @@ export default class MindMap {
             //Shift + Ctrl + space: toggle expand node
             if (keyCode == 32) {
                 var node = this.selectNode;
-                this._toggleExpandNode(node);
+                if(node)
+                { this._toggleExpandNode(node); }
             }
 
-            // Ctrl + Shift + B => Old text
-            if (keyCode == 66) {
+            // Ctrl + Shift + Z => Old text
+            if (keyCode == 90) {
                 var node = this.selectNode;
-                // var text = (node.data.oldText as string);
-                var text = (node.data.oldText);
-                node.setText(text);
-                e.preventDefault();
-                e.stopPropagation();
-                console.log(text+" / "+node.data.text);
+                if(node) {
+                    // var text = (node.data.oldText as string);
+                    var text = (node.data.oldText);
+                    node.setText(text);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log(text+" / "+node.data.text);
+                }
             }
 
-            // Ctrl + Shift + I => Old text
+            /*// Ctrl + Shift + I => Old text
             if (keyCode == 73) {
                 var node = this.selectNode;
-                // var text = (node.data.oldText as string);
-                var text = (node.data.oldText);
-                node.setText(text);
-                e.preventDefault();
-                e.stopPropagation();
-                console.log(text+" / "+node.data.text);
-            }
+                if(node) {
+                    // var text = (node.data.oldText as string);
+                    var text = (node.data.oldText);
+                    node.setText(text);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log(text+" / "+node.data.text);
+                }
+            }*/
         }
 
 
@@ -797,35 +865,39 @@ export default class MindMap {
             // Alt + H => Highlight
             if (keyCode == 72) {
                 var node = this.selectNode;
-                var text = node.data.text;
-                if( text.substring(0,2)=="==")  {
-                    // Already highlighted
-                    text = text.substring(2); // Remove leading ==
+                if(node) {
+                    var text = node.data.text;
+                    if( text.substring(0,2)=="==")  {
+                        // Already highlighted
+                        text = text.substring(2); // Remove leading ==
 
-                    if(text.substring(text.length-2)=="==") {
-                    // Remove trailing ==
-                    text = text.substring(0,text.length-2);
+                        if(text.substring(text.length-2)=="==") {
+                        // Remove trailing ==
+                        text = text.substring(0,text.length-2);
+                        }
+                        // else: no trailing ==
                     }
-                    // else: no trailing ==
-                }
-                else {// Not highlighted
-                    text = "=="+text+"==";
-                }
+                    else {// Not highlighted
+                        text = "=="+text+"==";
+                    }
 
-                // Set in node text
-                node.data.oldText = node.data.text;
-                node.setText(text);
-                e.preventDefault();
-                e.stopPropagation();
+                    // Set in node text
+                    node.data.oldText = node.data.text;
+                    node.setText(text);
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
             }
 
 
             // Alt + Home : Node info in console
             if (keyCode == 36) {
                 var node = this.selectNode;
-                console.log("Node idx: "+node.getIndex());
-                console.log("Previous node idx: "+node.getPreviousSibling().getIndex());
-                console.log("Next node idx: "+node.getNextSibling().getIndex());
+                if(node) {
+                    console.log("Node idx: "+node.getIndex());
+                    console.log("Previous node idx: "+node.getPreviousSibling().getIndex());
+                    console.log("Next node idx: "+node.getNextSibling().getIndex());
+                }
             }
 
             
@@ -837,6 +909,8 @@ export default class MindMap {
                     this.setDisplayedLevel(this.getMaxDisplayedLevel()-1);
                     this.refresh();
                     this.scale(this.mindScale);
+                    if(this.selectNode)
+                    { this.selectNode.select(); }
                 }
             }
 
@@ -846,7 +920,43 @@ export default class MindMap {
                 this.setDisplayedLevel(this.getMaxDisplayedLevel()+1);
                 this.refresh();
                 this.scale(this.mindScale);
+                if(this.selectNode)
+                { this.selectNode.select(); }
+        }
+
+
+            // Alt + é => Strike through
+            if (keyCode == 50) {
+                if(this.selectNode) {
+                    var node = this.selectNode;
+                    if(node.isEdit)
+                    { this.selectNode.unSelect(); }
+
+                    var text = node.data.text;
+                    if(text.substring(0,2)=="~~")
+                    {// Already stroke through
+                        text = text.substring(2); // Remove leading * / _
+
+                        if(text.substring(text.length-2)=="~~")   {
+                            // Remove trailing ~~
+                            text = text.substring(0,text.length-2);
+                            //console.log(text);      // Display
+                        }
+                        // else: no trailing ~~
+                    }
+                    else {// Not stroke through
+                        text = "~~"+text+"~~";
+                    }
+
+                    // Set in node text
+                    node.data.oldText = node.data.text;
+                    node.setText(text);
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                //else: editing or no node selected: nothing to do
             }
+            
         }
 
 
@@ -854,19 +964,31 @@ export default class MindMap {
 
             // Alt + Shift + PageUp: collapse one level from current node
             if (keyCode == 33) {
-                this.setDisplayedLevel(this.selectNode.getLevel()-1);
-                this.refresh();
+                if(this.selectNode) {
+                    this.setDisplayedLevel(this.selectNode.getLevel()-1);
+                    this.refresh();
+                    this.selectNode.parent.select();
+                }
             }
             
             
             // Alt + PageDn: expand one level
             if (keyCode == 34) {
-                this.setDisplayedLevel(this.selectNode.getLevel()+1);
-                this.refresh();
+                if(this.selectNode) {
+                    this.setDisplayedLevel(this.selectNode.getLevel()+1);
+                    this.refresh();
+                    this.selectNode.select();
+                }
             }
             
         }
 
+
+        if (altKey && ctrlKey && !shiftKey) {           // Alt + Ctrl key
+            // None
+        }
+            
+            
     }
 
 
