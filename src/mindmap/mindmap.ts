@@ -439,7 +439,7 @@ export default class MindMap {
         //     this.selectingNodes = false;
         // }
 
-        if (!ctrlKey && !shiftKey) {            // No special key
+        if (!ctrlKey && !shiftKey && !altKey) { // No special key
             // Enter 
             if (keyCode == 13 || e.key =='Enter') {
                 var node = this.selectNode;
@@ -528,15 +528,43 @@ export default class MindMap {
 
             // up
             if (keyCode == 38 || e.key == 'ArrowUp') {
+                // if( node && !node.isEdit && (node!=this.root) )
+                // {
+                //     this._selectNode(node, "up");
+                //     if(this.selectNode == node)
+                //     {// Move to parent's up
+                //         this._selectNode(node.parent, "up");
+                //     }
+                // }
                 var node = this.selectNode;
-                if (node && !node.isEdit)
-                { this._selectNode(node, "up"); }
+                if( node && !node.isEdit )
+                {
+                    var l_selectedNode = node;
+                    console.log("index: "+l_selectedNode.getIndex());
+                    while(  (this.selectNode == node)       &&
+                            (l_selectedNode != this.root)   )
+                    {
+                        this._selectNode(l_selectedNode, "up");
+                        l_selectedNode = l_selectedNode.parent;
+                        console.log("index: "+l_selectedNode.getIndex());
+                    }
+                }
             }
 
             if (keyCode == 40 || e.key == 'ArrowDown') {
                 var node = this.selectNode;
-                if (node && !node.isEdit)
-                { this._selectNode(node, "down"); }
+                if( node && !node.isEdit )
+                {
+                    var l_selectedNode = node;
+                    console.log("index: "+l_selectedNode.getIndex());
+                    while(  (this.selectNode == node)       &&
+                            (l_selectedNode != this.root)   )
+                    {
+                        this._selectNode(l_selectedNode, "down");
+                        l_selectedNode = l_selectedNode.parent;
+                        console.log("index: "+l_selectedNode.getIndex());
+                    }
+                }
                 // else if(!node) {
                 //     // n.select();
                 //     this.selectNode = 0;
@@ -857,6 +885,12 @@ export default class MindMap {
                     console.log(text+" / "+node.data.text);
                 }
             }*/
+
+            // Ctrl + Shift + Home : Center map
+            if (keyCode == 36) {
+                this.center();
+            }
+
         }
 
 
@@ -1042,6 +1076,7 @@ export default class MindMap {
         var minDis: number;
         var waitNode: INode = null;
         var pos = node.getPosition();
+        var rootPos = this.root.getPosition();
         var level = node.getLevel();
         var mind = this;
 
@@ -1061,15 +1096,18 @@ export default class MindMap {
                         ((level == 0)                       &&
                          l==1)                                  )
                     {// The tested node is at the correct level
-                        if (p.x > pos.x) {
-                            if (minDis) {
-                                if (minDis > dis) {
+                        if( (n == node.parent) || (node == n.parent) )
+                        {// Move only within same lineage
+                            if (p.x > pos.x) {
+                                if (minDis) {
+                                    if (minDis > dis) {
+                                        minDis = dis;
+                                        waitNode = n;
+                                    }
+                                } else {
                                     minDis = dis;
                                     waitNode = n;
                                 }
-                            } else {
-                                minDis = dis;
-                                waitNode = n;
                             }
                         }
                     }
@@ -1082,47 +1120,64 @@ export default class MindMap {
                          ((level == 0)                      &&
                           l==1)                                 )
                     {// The tested node is at the correct level
-                        if (p.x < pos.x) {
-                            if (minDis) {
-                                if (minDis > dis) {
+                        if( (n == node.parent) || (node == n.parent) )
+                        {// Move only within same lineage
+                            if (p.x < pos.x) {
+                                if (minDis) {
+                                    if (minDis > dis) {
+                                        minDis = dis;
+                                        waitNode = n;
+                                    }
+                                } else {
                                     minDis = dis;
                                     waitNode = n;
                                 }
-                            } else {
-                                minDis = dis;
-                                waitNode = n;
                             }
                         }
                     }
                     break;
                 case "up":
-                    if (p.y < pos.y) {
-                        if(level == l)
-                        {
-                            if (minDis) {
-                                if (minDis > dis) {
+                    if( (n.isShow())                &&
+                        (((pos.x<rootPos.x) &&
+                          (p.x<rootPos.x)   )   ||
+                         ((pos.x>rootPos.x) &&
+                          (p.x>rootPos.x)   )   )   )
+                    {// Move only on shown nodes + on the same side of the root
+                        if (p.y < pos.y) {
+                            if(level == l)
+                            {
+                                if (minDis) {
+                                    if (minDis > dis) {
+                                        minDis = dis;
+                                        waitNode = n;
+                                    }
+                                } else {
                                     minDis = dis;
                                     waitNode = n;
                                 }
-                            } else {
-                                minDis = dis;
-                                waitNode = n;
                             }
                         }
                     }
                     break;
                 case "down":
-                    if (p.y > pos.y) {
-                        if(level == l)
-                        {
-                            if (minDis) {
-                                if (minDis > dis) {
+                    if( (n.isShow())                &&
+                        (((pos.x<rootPos.x) &&
+                          (p.x<rootPos.x)   )   ||
+                         ((pos.x>rootPos.x) &&
+                          (p.x>rootPos.x)   )   )   )
+                    {// Move only on shown nodes + on the same side of the root
+                        if (p.y > pos.y) {
+                            if(level == l)
+                            {
+                                if (minDis) {
+                                    if (minDis > dis) {
+                                        minDis = dis;
+                                        waitNode = n;
+                                    }
+                                } else {
                                     minDis = dis;
                                     waitNode = n;
                                 }
-                            } else {
-                                minDis = dis;
-                                waitNode = n;
                             }
                         }
                     }
