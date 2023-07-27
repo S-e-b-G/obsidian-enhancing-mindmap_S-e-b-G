@@ -254,7 +254,6 @@ export default class MindMap {
     }
 
     clearSelectNode() {
-        //console.log("clearSelectNode");
         if (this.selectNode) {
             this.selectNode.unSelect();
             this.selectNode = null
@@ -494,10 +493,6 @@ export default class MindMap {
                         node.mindmap.execute("addChildNode", { parent: node });
                         this._menuDom.style.display='none';
                     } else{
-                        // node.cancelEdit();
-                        // node.select();
-                        // node.mindmap.editNode=null;
-                        
                         // this.selectNode.unSelect();
                         this.clearSelectNode();
                         node.select();
@@ -518,35 +513,21 @@ export default class MindMap {
                     node.mindmap.editNode = null;
                     node.cancelEdit();
                     this.undo();
-
-                    // this.clearSelectNode();
-                    // node.select();
-                    // node.mindmap.editNode=null;
                     //this.selectNode.unSelect();
                 }
             }
 
             // up
             if (keyCode == 38 || e.key == 'ArrowUp') {
-                // if( node && !node.isEdit && (node!=this.root) )
-                // {
-                //     this._selectNode(node, "up");
-                //     if(this.selectNode == node)
-                //     {// Move to parent's up
-                //         this._selectNode(node.parent, "up");
-                //     }
-                // }
                 var node = this.selectNode;
                 if( node && !node.isEdit )
                 {
                     var l_selectedNode = node;
-                    console.log("index: "+l_selectedNode.getIndex());
                     while(  (this.selectNode == node)       &&
                             (l_selectedNode != this.root)   )
                     {
                         this._selectNode(l_selectedNode, "up");
                         l_selectedNode = l_selectedNode.parent;
-                        console.log("index: "+l_selectedNode.getIndex());
                     }
                 }
             }
@@ -556,19 +537,13 @@ export default class MindMap {
                 if( node && !node.isEdit )
                 {
                     var l_selectedNode = node;
-                    console.log("index: "+l_selectedNode.getIndex());
                     while(  (this.selectNode == node)       &&
                             (l_selectedNode != this.root)   )
                     {
                         this._selectNode(l_selectedNode, "down");
                         l_selectedNode = l_selectedNode.parent;
-                        console.log("index: "+l_selectedNode.getIndex());
                     }
                 }
-                // else if(!node) {
-                //     // n.select();
-                //     this.selectNode = 0;
-                // }
             }
 
             if (keyCode == 39 || e.key == 'ArrowRight') {
@@ -584,16 +559,10 @@ export default class MindMap {
                     else
                     {
                         var node = this.selectNode;
-                        //this.selectNode.expand();
                         node.mindmap.execute('expandNode', {
                             node
                         });
                         this._selectNode(node, "right");
-                        /*if(this.selectNode.isHide)
-                        { this.selectNode.parent.expand(); }*/
-                        //this.selectNode.select();
-                        //this.refresh();
-
                     }
                 }
             }
@@ -611,15 +580,10 @@ export default class MindMap {
                     else
                     {
                         var node = this.selectNode;
-                        //this.selectNode.expand();
                         node.mindmap.execute('expandNode', {
                             node
                         });
                         this._selectNode(node, "left");
-                        /*if(this.selectNode.isHide)
-                        { this.selectNode.parent.expand(); }*/
-                        //this.selectNode.select();
-                        //this.refresh();
                     }
                 }
             }
@@ -629,11 +593,6 @@ export default class MindMap {
                 if( (!this.selectNode)          ||
                     (!this.selectNode.isEdit)   )
                 {// No edition: select root node
-                    // if(this.selectNode && !this.selectNode.isRoot)
-                    // {
-                    //     this.selectNode.unSelect();
-                    //     this.root.select();
-                    // }
                     if(this.selectNode)
                     { this.selectNode.unSelect(); }
                     this.root.select();
@@ -719,7 +678,6 @@ export default class MindMap {
                             (text.substring(text.length-1)=="_") )   {
                             // Remove trailing * / _
                             text = text.substring(0,text.length-1);
-                            console.log(text);      // Display
                         }
                         // else: no trailing *
                     }
@@ -873,19 +831,6 @@ export default class MindMap {
                 }
             }
 
-            /*// Ctrl + Shift + I => Old text
-            if (keyCode == 73) {
-                var node = this.selectNode;
-                if(node) {
-                    // var text = (node.data.oldText as string);
-                    var text = (node.data.oldText);
-                    node.setText(text);
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log(text+" / "+node.data.text);
-                }
-            }*/
-
             // Ctrl + Shift + Home : Center map
             if (keyCode == 36) {
                 this.center();
@@ -974,7 +919,6 @@ export default class MindMap {
                         if(text.substring(text.length-2)=="~~")   {
                             // Remove trailing ~~
                             text = text.substring(0,text.length-2);
-                            //console.log(text);      // Display
                         }
                         // else: no trailing ~~
                     }
