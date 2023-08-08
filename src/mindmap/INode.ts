@@ -290,6 +290,127 @@ export default class Node {
         }
     }
 
+
+    setSelectedText(i_str_1: string, i_str_2: string, i_check: boolean) {
+        // Get selection and Create new text
+        let l_selection = window.getSelection();
+        let l_selectedText = l_selection.toString();
+
+        // Remove leading space(s)
+        let l_leadingSpace = false;
+        while (l_selectedText.substring(0,1) == " ") {
+            l_selectedText = l_selectedText.substring(1);
+            l_leadingSpace = true;
+        }
+
+        // Remove trailing space(s)
+        let l_trailingSpace = false;
+        while (l_selectedText.substring(l_selectedText.length-1) == " ") {
+            l_selectedText = l_selectedText.substring(0,l_selectedText.length-1);
+            l_trailingSpace = true;
+        }
+
+        if(i_check)
+        {// Check in case the pre-/suf-fix must be substracted
+            if( (l_selectedText.substring(0,2) == i_str_1)  || 
+                (l_selectedText.substring(0,2) == i_str_2)  )
+            {// Prefix must be substracted
+                l_selectedText = l_selectedText.substring(i_str_1.length); // Remove leading prefix
+
+                if( (l_selectedText.substring(l_selectedText.length-2) == i_str_1)  || 
+                    (l_selectedText.substring(l_selectedText.length-2) == i_str_2)  )
+                {// Suffix must be substracted
+                    l_selectedText = l_selectedText.substring(0,l_selectedText.length-i_str_1.length);
+                }
+                // else: no trailing prefix
+            }
+            else {// No pre-/suf-fix: add it
+                l_selectedText = i_str_1+l_selectedText+i_str_1;
+            }
+        }
+        else {// No need to check: add the string
+            l_selectedText = i_str_1+l_selectedText+i_str_1;
+        }
+
+        // Add a leading/trailing space if needed
+        if (l_leadingSpace) {
+            l_selectedText = (" "+l_selectedText);
+        }
+        if (l_trailingSpace) {
+            l_selectedText = (l_selectedText+" ");
+        }
+
+
+        // Create a new selection range
+        let range = l_selection.getRangeAt(0);
+        range.deleteContents();
+        let textNode = document.createTextNode(l_selectedText);
+        range.insertNode(textNode);
+
+        // Unselect modified text
+        //selection.removeAllRanges();
+    }
+
+    setSelectedText_italic() {
+        // Get selection and Create new text
+        let l_selection = window.getSelection();
+        let l_selectedText = l_selection.toString();
+
+        // Remove leading space(s)
+        let l_leadingSpace = false;
+        while (l_selectedText.substring(0,1) == " ") {
+            l_selectedText = l_selectedText.substring(1);
+            l_leadingSpace = true;
+        }
+
+        // Remove trailing space(s)
+        let l_trailingSpace = false;
+        while (l_selectedText.substring(l_selectedText.length-1) == " ") {
+            l_selectedText = l_selectedText.substring(0,l_selectedText.length-1);
+            l_trailingSpace = true;
+        }
+
+        {// Check in case the pre-/suf-fix must be substracted
+            if( (  ((l_selectedText.substring(0,1)=="*")    ||
+                    (l_selectedText.substring(0,1)=="_")    )   &&   
+                (l_selectedText.substring(0,2)!="**")           &&
+                (l_selectedText.substring(0,2)!="__")           )   ||
+                (l_selectedText.substring(0,3)=="***")              ||
+                (l_selectedText.substring(0,3)=="___")              )
+            {// Already italic
+                l_selectedText = l_selectedText.substring(1); // Remove leading prefix
+
+                if( (l_selectedText.substring(l_selectedText.length-1) == "*")  || 
+                    (l_selectedText.substring(l_selectedText.length-1) == "_")  )
+                {// Suffix must be substracted
+                    l_selectedText = l_selectedText.substring(0,l_selectedText.length-1);
+                }
+                // else: no trailing prefix
+            }
+            else {// No pre-/suf-fix: add it
+                l_selectedText = "*"+l_selectedText+"*"; // Use "*" so that bold/italic can be changed in whetever order
+            }
+        }
+
+        // Add a leading/trailing space if needed
+        if (l_leadingSpace) {
+            l_selectedText = (" "+l_selectedText);
+        }
+        if (l_trailingSpace) {
+            l_selectedText = (l_selectedText+" ");
+        }
+
+        // Create a new selection range
+        let range = l_selection.getRangeAt(0);
+        range.deleteContents();
+        let textNode = document.createTextNode(l_selectedText);
+        range.insertNode(textNode);
+
+        // Unselect modified text
+        //selection.removeAllRanges();
+    }
+
+
     cancelEdit(){
         console.log("CancelEdit");
         var text = this.contentEl.innerText.trim()||'';

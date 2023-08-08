@@ -513,6 +513,103 @@ class Node {
             selection.addRange(range);
         }
     }
+    setSelectedText(i_str_1, i_str_2, i_check) {
+        // Get selection and Create new text
+        let l_selection = window.getSelection();
+        let l_selectedText = l_selection.toString();
+        // Remove leading space(s)
+        let l_leadingSpace = false;
+        while (l_selectedText.substring(0, 1) == " ") {
+            l_selectedText = l_selectedText.substring(1);
+            l_leadingSpace = true;
+        }
+        // Remove trailing space(s)
+        let l_trailingSpace = false;
+        while (l_selectedText.substring(l_selectedText.length - 1) == " ") {
+            l_selectedText = l_selectedText.substring(0, l_selectedText.length - 1);
+            l_trailingSpace = true;
+        }
+        if (i_check) { // Check in case the pre-/suf-fix must be substracted
+            if ((l_selectedText.substring(0, 2) == i_str_1) ||
+                (l_selectedText.substring(0, 2) == i_str_2)) { // Prefix must be substracted
+                l_selectedText = l_selectedText.substring(i_str_1.length); // Remove leading prefix
+                if ((l_selectedText.substring(l_selectedText.length - 2) == i_str_1) ||
+                    (l_selectedText.substring(l_selectedText.length - 2) == i_str_2)) { // Suffix must be substracted
+                    l_selectedText = l_selectedText.substring(0, l_selectedText.length - i_str_1.length);
+                }
+                // else: no trailing prefix
+            }
+            else { // No pre-/suf-fix: add it
+                l_selectedText = i_str_1 + l_selectedText + i_str_1;
+            }
+        }
+        else { // No need to check: add the string
+            l_selectedText = i_str_1 + l_selectedText + i_str_1;
+        }
+        // Add a leading/trailing space if needed
+        if (l_leadingSpace) {
+            l_selectedText = (" " + l_selectedText);
+        }
+        if (l_trailingSpace) {
+            l_selectedText = (l_selectedText + " ");
+        }
+        // Create a new selection range
+        let range = l_selection.getRangeAt(0);
+        range.deleteContents();
+        let textNode = document.createTextNode(l_selectedText);
+        range.insertNode(textNode);
+        // Unselect modified text
+        //selection.removeAllRanges();
+    }
+    setSelectedText_italic() {
+        // Get selection and Create new text
+        let l_selection = window.getSelection();
+        let l_selectedText = l_selection.toString();
+        // Remove leading space(s)
+        let l_leadingSpace = false;
+        while (l_selectedText.substring(0, 1) == " ") {
+            l_selectedText = l_selectedText.substring(1);
+            l_leadingSpace = true;
+        }
+        // Remove trailing space(s)
+        let l_trailingSpace = false;
+        while (l_selectedText.substring(l_selectedText.length - 1) == " ") {
+            l_selectedText = l_selectedText.substring(0, l_selectedText.length - 1);
+            l_trailingSpace = true;
+        }
+        { // Check in case the pre-/suf-fix must be substracted
+            if ((((l_selectedText.substring(0, 1) == "*") ||
+                (l_selectedText.substring(0, 1) == "_")) &&
+                (l_selectedText.substring(0, 2) != "**") &&
+                (l_selectedText.substring(0, 2) != "__")) ||
+                (l_selectedText.substring(0, 3) == "***") ||
+                (l_selectedText.substring(0, 3) == "___")) { // Already italic
+                l_selectedText = l_selectedText.substring(1); // Remove leading prefix
+                if ((l_selectedText.substring(l_selectedText.length - 1) == "*") ||
+                    (l_selectedText.substring(l_selectedText.length - 1) == "_")) { // Suffix must be substracted
+                    l_selectedText = l_selectedText.substring(0, l_selectedText.length - 1);
+                }
+                // else: no trailing prefix
+            }
+            else { // No pre-/suf-fix: add it
+                l_selectedText = "*" + l_selectedText + "*"; // Use "*" so that bold/italic can be changed in whetever order
+            }
+        }
+        // Add a leading/trailing space if needed
+        if (l_leadingSpace) {
+            l_selectedText = (" " + l_selectedText);
+        }
+        if (l_trailingSpace) {
+            l_selectedText = (l_selectedText + " ");
+        }
+        // Create a new selection range
+        let range = l_selection.getRangeAt(0);
+        range.deleteContents();
+        let textNode = document.createTextNode(l_selectedText);
+        range.insertNode(textNode);
+        // Unselect modified text
+        //selection.removeAllRanges();
+    }
     cancelEdit() {
         console.log("CancelEdit");
         var text = this.contentEl.innerText.trim() || '';
@@ -8571,29 +8668,18 @@ class MindMap {
             // Ctrl + B => Bold
             if (keyCode == 66) {
                 if (this.selectNode) {
+                    var l_prefix_1 = "**";
+                    var l_prefix_2 = "__";
                     var node = this.selectNode;
-                    if (node.isEdit) {
-                        this.selectNode.unSelect();
+                    if (node.isEdit) { // A node is edited: set in bold only the selected part
+                        var l_check_prefix = true;
+                        node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
                     }
-                    var text = node.data.text;
-                    if ((text.substring(0, 2) == "**") ||
-                        (text.substring(0, 2) == "__")) { // Already bold
-                        text = text.substring(2); // Remove leading ** / __
-                        if ((text.substring(text.length - 2) == "**") ||
-                            (text.substring(text.length - 2) == "__")) {
-                            // Remove trailing ** / __
-                            text = text.substring(0, text.length - 2);
-                        }
-                        // else: no trailing **
+                    else { // Set in bold the whole node
+                        this._formatNode(node, l_prefix_1, l_prefix_2);
+                        e.preventDefault();
+                        e.stopPropagation();
                     }
-                    else { // Not in bold
-                        text = "**" + text + "**";
-                    }
-                    // Set in node text
-                    node.data.oldText = node.data.text;
-                    node.setText(text);
-                    e.preventDefault();
-                    e.stopPropagation();
                 }
                 //else: no node selected: nothing to do
             }
@@ -8601,38 +8687,41 @@ class MindMap {
             if (keyCode == 73) {
                 if (this.selectNode) {
                     var node = this.selectNode;
-                    if (node.isEdit) {
-                        this.selectNode.unSelect();
+                    if (node.isEdit) { // A node is edited: set in italics only the selected part
+                        node.setSelectedText_italic();
                     }
-                    var text = node.data.text;
-                    if ((((text.substring(0, 1) == "*") ||
-                        (text.substring(0, 1) == "_")) &&
-                        (text.substring(0, 2) != "**") &&
-                        (text.substring(0, 2) != "__")) ||
-                        (text.substring(0, 3) == "***") ||
-                        (text.substring(0, 3) == "___")) { // Already italic
-                        text = text.substring(1); // Remove leading * / _
-                        if ((text.substring(text.length - 1) == "*") ||
-                            (text.substring(text.length - 1) == "_")) {
-                            // Remove trailing * / _
-                            text = text.substring(0, text.length - 1);
+                    else { // Set in italics the whole node
+                        var text = node.data.text;
+                        if ((((text.substring(0, 1) == "*") ||
+                            (text.substring(0, 1) == "_")) &&
+                            (text.substring(0, 2) != "**") &&
+                            (text.substring(0, 2) != "__")) ||
+                            (text.substring(0, 3) == "***") ||
+                            (text.substring(0, 3) == "___")) { // Already italic
+                            text = text.substring(1); // Remove leading * / _
+                            if ((text.substring(text.length - 1) == "*") ||
+                                (text.substring(text.length - 1) == "_")) {
+                                // Remove trailing * / _
+                                text = text.substring(0, text.length - 1);
+                            }
+                            // else: no trailing *
                         }
-                        // else: no trailing *
+                        else { // Not in italic
+                            text = "*" + text + "*"; // Use "*" to allow bold/italic change in whatever order
+                        }
+                        // Set in node text
+                        node.data.oldText = node.data.text;
+                        node.setText(text);
+                        e.preventDefault();
+                        e.stopPropagation();
                     }
-                    else { // Not in italic
-                        text = "*" + text + "*";
-                    }
-                    // Set in node text
-                    node.data.oldText = node.data.text;
-                    node.setText(text);
-                    e.preventDefault();
-                    e.stopPropagation();
                 }
                 //else: no node selected: nothing to do
             }
             // ctrl + E  center mindmap view
             if (keyCode == 69) {
-                this.center();
+                //this.center();
+                this.centerOnNode(this.selectNode);
             }
             // Move one node above
             if (keyCode == 38 || e.key == 'ArrowUp') {
@@ -8747,27 +8836,39 @@ class MindMap {
         if (altKey && !ctrlKey && !shiftKey) { // Alt key
             // Alt + H => Highlight
             if (keyCode == 72) {
-                var node = this.selectNode;
-                if (node) {
-                    var text = node.data.text;
-                    if (text.substring(0, 2) == "==") {
-                        // Already highlighted
-                        text = text.substring(2); // Remove leading ==
-                        if (text.substring(text.length - 2) == "==") {
-                            // Remove trailing ==
-                            text = text.substring(0, text.length - 2);
-                        }
-                        // else: no trailing ==
+                if (this.selectNode) { // There is a node selected: format
+                    var l_prefix_1 = "==";
+                    var l_prefix_2 = l_prefix_1;
+                    var node = this.selectNode;
+                    if (node.isEdit) { // A node is edited: set in bold only the selected part
+                        var l_check_prefix = true;
+                        node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
                     }
-                    else { // Not highlighted
-                        text = "==" + text + "==";
+                    else { // Set in bold the whole node
+                        this._formatNode(node, l_prefix_1, l_prefix_2);
+                        e.preventDefault();
+                        e.stopPropagation();
                     }
-                    // Set in node text
-                    node.data.oldText = node.data.text;
-                    node.setText(text);
-                    e.preventDefault();
-                    e.stopPropagation();
                 }
+                //else: no node selected: nothing to do
+            }
+            // Alt + é => Strike through
+            if (keyCode == 50) {
+                if (this.selectNode) { // There is a node selected: format
+                    var l_prefix_1 = "~~";
+                    var l_prefix_2 = l_prefix_1;
+                    var node = this.selectNode;
+                    if (node.isEdit) { // A node is edited: set in bold only the selected part
+                        var l_check_prefix = true;
+                        node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
+                    }
+                    else { // Set in bold the whole node
+                        this._formatNode(node, l_prefix_1, l_prefix_2);
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                }
+                //else: no node selected: nothing to do
             }
             // Alt + Home : Node info in console
             if (keyCode == 36) {
@@ -8776,6 +8877,8 @@ class MindMap {
                     console.log("Node idx: " + node.getIndex());
                     console.log("Previous node idx: " + node.getPreviousSibling().getIndex());
                     console.log("Next node idx: " + node.getNextSibling().getIndex());
+                    console.log("Node pos: x=" + node.getPosition().x + " / y=" + node.getPosition().y);
+                    //node.setText
                 }
             }
             // Alt + PageUp: collapse one level from max displayed level
@@ -8799,33 +8902,6 @@ class MindMap {
                     this.selectNode.select();
                 }
             }
-            // Alt + é => Strike through
-            if (keyCode == 50) {
-                if (this.selectNode) {
-                    var node = this.selectNode;
-                    if (node.isEdit) {
-                        this.selectNode.unSelect();
-                    }
-                    var text = node.data.text;
-                    if (text.substring(0, 2) == "~~") { // Already stroke through
-                        text = text.substring(2); // Remove leading * / _
-                        if (text.substring(text.length - 2) == "~~") {
-                            // Remove trailing ~~
-                            text = text.substring(0, text.length - 2);
-                        }
-                        // else: no trailing ~~
-                    }
-                    else { // Not stroke through
-                        text = "~~" + text + "~~";
-                    }
-                    // Set in node text
-                    node.data.oldText = node.data.text;
-                    node.setText(text);
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                //else: editing or no node selected: nothing to do
-            }
         }
         if (altKey && !ctrlKey && shiftKey) { // Alt + Shift key
             // Alt + Shift + PageUp: collapse one level from current node
@@ -8845,6 +8921,24 @@ class MindMap {
                 }
             }
         }
+    }
+    _formatNode(node, i_prefix_1, i_prefix_2) {
+        var text = node.data.text;
+        if ((text.substring(0, 2) == i_prefix_1) ||
+            (text.substring(0, 2) == i_prefix_2)) { // Already formatted
+            text = text.substring(i_prefix_1.length); // Remove leading prefix
+            if ((text.substring(text.length - 2) == i_prefix_1) ||
+                (text.substring(text.length - 2) == i_prefix_2)) { // Remove trailing prefix
+                text = text.substring(0, text.length - i_prefix_1.length);
+            }
+            // else: no trailing prefix
+        }
+        else { // Not formatted
+            text = i_prefix_1 + text + i_prefix_1;
+        }
+        // Set the text in the node
+        node.data.oldText = node.data.text;
+        node.setText(text);
     }
     _moveAsParent(node) {
         if ((!node.isEdit) &&
@@ -9479,6 +9573,24 @@ class MindMap {
         this.containerEL.scrollTop = this.setting.canvasSize / 2 - h / 2 - 60;
         this.containerEL.scrollLeft = this.setting.canvasSize / 2 - w / 2 + 30;
         this.scale(oldScale);
+    }
+    centerOnNode(node) {
+        if (node == null) { //No node given as input argument
+            this.center();
+        }
+        else {
+            console.log("Center mindmap on node " + node.getId());
+            this._setMindScalePointer();
+            var oldScale = this.mindScale;
+            this.scale(100);
+            var w = this.containerEL.clientWidth;
+            var h = this.containerEL.clientHeight;
+            //this.containerEL.scrollTop = this.setting.canvasSize / 2 - h / 2 - 60 ;
+            //this.containerEL.scrollLeft = this.setting.canvasSize / 2 - w / 2 + 30 ;
+            this.containerEL.scrollTop = node.getPosition().y - h / 2 + 60;
+            this.containerEL.scrollLeft = node.getPosition().x - w / 2;
+            this.scale(oldScale);
+        }
     }
     _resetMaxDisplayedLevel() {
         this.dispLevel = 0;
