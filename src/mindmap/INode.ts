@@ -483,6 +483,13 @@ export default class Node {
         }
     }
 
+    getDimensions(){
+        return {
+            x:this.box.width,
+            y:this.box.height
+        }
+    }
+
     move(dx:number, dy:number) {
         var p = this.getPosition();
         this.setPosition(p.x + dx, p.y + dy);

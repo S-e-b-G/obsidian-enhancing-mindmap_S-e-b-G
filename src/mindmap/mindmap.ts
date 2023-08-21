@@ -12,6 +12,7 @@ import jsZip from 'jszip'
 
 let deleteIcon = '<svg class="icon" width="16px" height="16.00px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path  d="M799.2 874.4c0 34.4-28 62.4-62.368 62.4H287.2a62.496 62.496 0 0 1-62.4-62.4V212h574.4v662.4zM349.6 100c0-7.2 5.6-12.8 12.8-12.8h300c7.2 0 12.768 5.6 12.768 12.8v37.6H349.6V100z m636.8 37.6H749.6V100c0-48-39.2-87.2-87.2-87.2h-300a87.392 87.392 0 0 0-87.2 87.2v37.6H37.6C16.8 137.6 0 154.4 0 175.2s16.8 37.6 37.6 37.6h112v661.6A137.6 137.6 0 0 0 287.2 1012h449.6a137.6 137.6 0 0 0 137.6-137.6V212h112c20.8 0 37.6-16.8 37.6-37.6s-16.8-36.8-37.6-36.8zM512 824c20.8 0 37.6-16.8 37.6-37.6v-400c0-20.8-16.768-37.6-37.6-37.6-20.8 0-37.6 16.8-37.6 37.6v400c0 20.8 16.8 37.6 37.6 37.6m-175.2 0c20.8 0 37.6-16.8 37.6-37.6v-400c0-20.8-16.8-37.6-37.6-37.6s-37.6 16.8-37.6 37.6v400c0.8 20.8 17.6 37.6 37.6 37.6m350.4 0c20.8 0 37.632-16.8 37.632-37.6v-400c0-20.8-16.8-37.6-37.632-37.6-20.768 0-37.6 16.8-37.6 37.6v400c0 20.8 16.8 37.6 37.6 37.6" /></svg>';
 let addIcon = '<svg class="icon" width="16px" height="16.00px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path  d="M512 1024C230.4 1024 0 793.6 0 512S230.4 0 512 0s512 230.4 512 512-230.4 512-512 512z m0-960C265.6 64 64 265.6 64 512s201.6 448 448 448 448-201.6 448-448S758.4 64 512 64z"  /><path d="M800 544H224c-19.2 0-32-12.8-32-32s12.8-32 32-32h576c19.2 0 32 12.8 32 32s-12.8 32-32 32z"  /><path  d="M512 832c-19.2 0-32-12.8-32-32V224c0-19.2 12.8-32 32-32s32 12.8 32 32v576c0 19.2-12.8 32-32 32z"  /></svg>';
+let tempDispLevel = 0;
 
 interface Setting {
     theme?: string;
@@ -603,7 +604,7 @@ export default class MindMap {
         }
 
 
-        if (ctrlKey && !shiftKey) {             // CTRL KEY
+        if (ctrlKey && !shiftKey && !altKey) {  // CTRL KEY
             /*//ctr + /  (or Ctrl + NumpadDivide) toggle expand node
             // if ((keyCode == 191) || (keyCode == 111)) {
             //     var node = this.selectNode;
@@ -643,6 +644,9 @@ export default class MindMap {
                         e.preventDefault();
                         e.stopPropagation();                
                     }
+
+                    this.refresh();
+                    this.scale(this.mindScale);
                 }
                 //else: no node selected: nothing to do
             }
@@ -687,6 +691,9 @@ export default class MindMap {
                         e.preventDefault();
                         e.stopPropagation();
                     }
+
+                    this.refresh();
+                    this.scale(this.mindScale);
                 }
                 //else: no node selected: nothing to do
             }
@@ -699,7 +706,7 @@ export default class MindMap {
             }
 
 
-            // Move one node above
+            // ctrl + Up: Move one node above
             if (keyCode == 38 || e.key == 'ArrowUp') {
                 var node = this.selectNode;
                 if(!node)
@@ -718,6 +725,7 @@ export default class MindMap {
                     //else: no special treatment
                     this.moveNode(node, node.getPreviousSibling(), type);
                 }
+                this.centerOnNode(this.selectNode);
             }
 
 
@@ -740,6 +748,7 @@ export default class MindMap {
                     //else: no special treatment
                     this.moveNode(node, node.getNextSibling(), type);
                 }
+                this.centerOnNode(this.selectNode);
             }
 
 
@@ -763,6 +772,7 @@ export default class MindMap {
                         this._moveAsChild(node, node.getPreviousSibling());
                     }
                 }
+                this.centerOnNode(this.selectNode);
             }
 
 
@@ -789,6 +799,7 @@ export default class MindMap {
                         this._moveAsParent(node);
                     }
                 }
+                this.centerOnNode(this.selectNode);
             }
 
 
@@ -818,7 +829,7 @@ export default class MindMap {
         }
 
 
-        if (ctrlKey && shiftKey) {          // CTRL + SHIFT key
+        if (ctrlKey && shiftKey && !altKey) {   // CTRL + SHIFT key
             //Shift + Ctrl + space: toggle expand node
             if (keyCode == 32) {
                 var node = this.selectNode;
@@ -905,6 +916,11 @@ export default class MindMap {
                     console.log("Previous node idx: "+node.getPreviousSibling().getIndex());
                     console.log("Next node idx: "+node.getNextSibling().getIndex());
                     console.log("Node pos: x="+node.getPosition().x+" / y="+node.getPosition().y);
+                    console.log("Node dim: x="+node.getDimensions().x+" / y="+node.getDimensions().y);
+                    console.log("Canvas: "+this.setting.canvasSize);
+                    console.log("Disp scroll: x="+this.containerEL.scrollLeft+" / y="+this.containerEL.scrollTop);
+                    console.log("Disp client: x="+this.containerEL.clientWidth+" / y="+this.containerEL.clientHeight);
+        
                     //node.setText
                 }
             }
@@ -912,32 +928,26 @@ export default class MindMap {
             
             // Alt + PageUp: collapse one level from max displayed level
             if (keyCode == 33) {
-                /*if( (!this.selectNode)                                          ||
-                    (this.getMaxDisplayedLevel()>this.selectNode.getLevel())    )
+                node = this.selectNode;
+                if( (node)                                                  &&
+                    (this.getMaxNodeDisplayedLevel(node)>node.getLevel())   )
                 {// Collapse only if current selected node would not be hidden
-                    this.setDisplayedLevel(this.getMaxDisplayedLevel()-1);*/
-                if( (this.selectNode)                                           &&
-                    (this.getMaxDisplayedLevel()>this.selectNode.getLevel())    )
-                {// Collapse only if current selected node would not be hidden
-                    //this.setDisplayedLevel(this.getMaxDisplayedLevel()-1);
-                    this.setChildrenDisplayedLevel(this.getMaxDisplayedLevel()-1);
+                    this.setChildrenDisplayedLevel(this.getMaxNodeDisplayedLevel(node)-1);
                     this.refresh();
                     this.scale(this.mindScale);
-                    if(this.selectNode)
-                    { this.selectNode.select(); }
+                    this.selectNode.select();
                 }
             }
 
 
             // Alt + PageDn: expand one level
             if (keyCode == 34) {
-                //this.setDisplayedLevel(this.getMaxDisplayedLevel()+1);
-                if(this.selectNode) {
-                    this.setChildrenDisplayedLevel(this.getMaxDisplayedLevel()+1);
+                node = this.selectNode;
+                if(node) {
+                    this.setChildrenDisplayedLevel(this.getMaxNodeDisplayedLevel(node)+1);
                     this.refresh();
                     this.scale(this.mindScale);
-                    //if(this.selectNode)
-                    { this.selectNode.select(); }
+                    this.selectNode.select();
                 }
             }
 
@@ -1634,9 +1644,9 @@ export default class MindMap {
         this.removeNode(joinedNode);
 
         this.clearSelectNode();
-        node.select();
         this.refresh();
         this.scale(this.mindScale);
+        node.select();
     }
 
     //execute cmd , store history
@@ -1752,10 +1762,14 @@ export default class MindMap {
 
             var w = this.containerEL.clientWidth;
             var h = this.containerEL.clientHeight;
+            let pos_x = node.getPosition().x;
+            let pos_y = node.getPosition().y;
+            let dim_x = node.getDimensions().x;
+            let dim_y = node.getDimensions().y;
             //this.containerEL.scrollTop = this.setting.canvasSize / 2 - h / 2 - 60 ;
             //this.containerEL.scrollLeft = this.setting.canvasSize / 2 - w / 2 + 30 ;
-            this.containerEL.scrollTop = node.getPosition().y - h / 2 + 60 ;
-            this.containerEL.scrollLeft = node.getPosition().x - w / 2  ;
+            this.containerEL.scrollTop  = pos_y - (h/2 - dim_y/2) + 90;
+            this.containerEL.scrollLeft = pos_x - (w/2 - dim_x/2) + 40;
 
             this.scale(oldScale);
         }
@@ -1771,12 +1785,10 @@ export default class MindMap {
     _getMaxDisplayedLevel(node: INode)
     {// Returns the highest displayed level.
      // Use getMaxDisplayedLevel (without _).
-        var currentLevel = 0;
-
-        if( (node.getLevel() > this.dispLevel)  &&
+        if( (node.getLevel() > tempDispLevel)   &&
             (node.isShow())                     )
         {// Displayed node with higher level
-            this.dispLevel = node.getLevel();
+            tempDispLevel = node.getLevel();
         }
 
         if(!node.isLeaf())
@@ -1792,10 +1804,20 @@ export default class MindMap {
 
     getMaxDisplayedLevel()
     {// Returns the highest displayed level.
-        this._resetMaxDisplayedLevel();
+        tempDispLevel = 0;
         this._getMaxDisplayedLevel(this.root);
+        this.dispLevel = tempDispLevel;
 
         return this.dispLevel;
+    }
+
+
+    getMaxNodeDisplayedLevel(node: INode)
+    {// Returns the highest displayed level.
+        tempDispLevel = 0;
+        this._getMaxDisplayedLevel(node);
+
+        return tempDispLevel;
     }
 
 
