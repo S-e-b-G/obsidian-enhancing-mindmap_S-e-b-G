@@ -64,7 +64,8 @@ export default class MindMap {
     constructor(data: INodeData, containerEL: HTMLElement, setting?: Setting) {
         this.setting = Object.assign({
             theme: 'default',
-            canvasSize: 8000,
+            //canvasSize: 8000,
+            canvasSize: 36000,
             fontSize: 16,
             background: 'transparent',
             color: 'inherit',
@@ -720,7 +721,7 @@ export default class MindMap {
             }
 
 
-            // Move one step below
+            // Ctrl + Down: Move one step below
             if (keyCode == 40 || e.key == 'ArrowDown') {
                 var node = this.selectNode;
                 if(!node)
@@ -746,11 +747,11 @@ export default class MindMap {
             if (keyCode == 37 || e.key == 'ArrowLeft') {
                 var node = this.selectNode;
                 if(!node)
-                {// No node selected
+                {// No node selected: select root node
                     this.root.select();
                     node = this.selectNode;
                 }
-                else {
+                else {// Move current node as parent/child depending on the position
                     var rootPos = this.root.getPosition();
                     var nodePos = node.getPosition();
                     if(rootPos.x < nodePos.x)
@@ -759,7 +760,7 @@ export default class MindMap {
                     }
                     else
                     {
-                        this._moveAsChild(node);
+                        this._moveAsChild(node, node.getPreviousSibling());
                     }
                 }
             }
@@ -781,7 +782,7 @@ export default class MindMap {
                         // this.selectedNodes.forEach((n:INode) => {
                         //     this._moveAsChild(n);
                         // });
-                        this._moveAsChild(node);
+                        this._moveAsChild(node, node.getPreviousSibling());
                     }
                     else
                     {
@@ -789,6 +790,16 @@ export default class MindMap {
                     }
                 }
             }
+
+
+            // Ctrl + J: Join with following node
+            if (keyCode == 74) {
+                var node = this.selectNode;
+                if(node)
+                {  this.joinWithFollowingNode(node); }
+                // else: No node selected: nothing to do
+            }
+
 
 
             // Ctrl + Home : Select root node
@@ -994,11 +1005,11 @@ export default class MindMap {
     }
 
 
-    _moveAsChild(node: INode) {
-        if( (!node.isEdit)  &&
-            (!node.isRoot)  )
+    _moveAsChild(movedNode: INode, newParentNode: INode) {
+        if( (!movedNode.isEdit)  &&
+            (!movedNode.isRoot)  )
         {// The node can be moved
-            this.moveNode(node, node.getPreviousSibling(), 'child-right');
+            this.moveNode(movedNode, newParentNode, 'child-right');
         }
 
 
@@ -1591,6 +1602,32 @@ export default class MindMap {
         }
 
        // this.execute('moveNode', { type: 'child', node: dragNode, oldParent: dragNode.parent, parent: dropNode })
+    }
+
+    // Join the current node with the following node
+    joinWithFollowingNode(node: INode) {
+        let joinedNode = node.getNextSibling();
+
+        // Set node's text
+        node.setText(node.data.text + joinedNode.data.text);
+
+        if(!joinedNode.isLeaf())
+        {// The joined node has children: copy them to the current node
+            joinedNode.children.forEach((n) => {
+                //this._moveAsChild(n, node);
+                let copiedNode = this.copyNode(n);
+                this.selectNode.unSelect();
+                node.select();
+                this.pasteNode(copiedNode);
+            });
+        }
+
+        // Delete joined node
+        this.removeNode(joinedNode);
+
+        this.clearSelectNode();
+        node.select();
+        this.refresh();
     }
 
     //execute cmd , store history
