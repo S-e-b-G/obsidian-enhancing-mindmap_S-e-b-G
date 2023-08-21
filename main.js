@@ -8501,7 +8501,7 @@ class MindMap {
         // } else {
         //     this.selectingNodes = false;
         // }
-        if (!ctrlKey && !shiftKey && !altKey) { // No special key
+        if (!ctrlKey && !shiftKey && !altKey) { // NO SPECIAL KEY
             // Enter 
             if (keyCode == 13 || e.key == 'Enter') {
                 var node = this.selectNode;
@@ -8646,7 +8646,7 @@ class MindMap {
                 }
             }
         }
-        if (ctrlKey && !shiftKey) { // CTRL key
+        if (ctrlKey && !shiftKey) { // CTRL KEY
             /*//ctr + /  (or Ctrl + NumpadDivide) toggle expand node
             // if ((keyCode == 191) || (keyCode == 111)) {
             //     var node = this.selectNode;
@@ -8892,9 +8892,14 @@ class MindMap {
             }
             // Alt + PageUp: collapse one level from max displayed level
             if (keyCode == 33) {
-                if ((!this.selectNode) ||
+                /*if( (!this.selectNode)                                          ||
+                    (this.getMaxDisplayedLevel()>this.selectNode.getLevel())    )
+                {// Collapse only if current selected node would not be hidden
+                    this.setDisplayedLevel(this.getMaxDisplayedLevel()-1);*/
+                if ((this.selectNode) &&
                     (this.getMaxDisplayedLevel() > this.selectNode.getLevel())) { // Collapse only if current selected node would not be hidden
-                    this.setDisplayedLevel(this.getMaxDisplayedLevel() - 1);
+                    //this.setDisplayedLevel(this.getMaxDisplayedLevel()-1);
+                    this.setChildrenDisplayedLevel(this.getMaxDisplayedLevel() - 1);
                     this.refresh();
                     this.scale(this.mindScale);
                     if (this.selectNode) {
@@ -8904,11 +8909,15 @@ class MindMap {
             }
             // Alt + PageDn: expand one level
             if (keyCode == 34) {
-                this.setDisplayedLevel(this.getMaxDisplayedLevel() + 1);
-                this.refresh();
-                this.scale(this.mindScale);
+                //this.setDisplayedLevel(this.getMaxDisplayedLevel()+1);
                 if (this.selectNode) {
-                    this.selectNode.select();
+                    this.setChildrenDisplayedLevel(this.getMaxDisplayedLevel() + 1);
+                    this.refresh();
+                    this.scale(this.mindScale);
+                    //if(this.selectNode)
+                    {
+                        this.selectNode.select();
+                    }
                 }
             }
         }
@@ -9517,6 +9526,7 @@ class MindMap {
         this.clearSelectNode();
         node.select();
         this.refresh();
+        this.scale(this.mindScale);
     }
     //execute cmd , store history
     execute(name, data) {
@@ -9593,7 +9603,7 @@ class MindMap {
         }
     }
     center() {
-        console.log("Center mindmap");
+        //console.log("Center mindmap")
         this._setMindScalePointer();
         var oldScale = this.mindScale;
         this.scale(100);
@@ -9608,7 +9618,7 @@ class MindMap {
             this.center();
         }
         else {
-            console.log("Center mindmap on node " + node.getId());
+            //console.log("Center mindmap on node "+node.getId())
             this._setMindScalePointer();
             var oldScale = this.mindScale;
             this.scale(100);
@@ -9662,6 +9672,26 @@ class MindMap {
             this.root.children.forEach((n) => {
                 this._setDisplayedLevel(n, level);
             });
+        }
+        else {
+            this.root.collapse();
+        }
+        return;
+    }
+    setChildrenDisplayedLevel(level) {
+        let node = this.selectNode;
+        if (level > 0 && node) {
+            if (node.getLevel() == level) { // Max required displayed level is node level
+                node.mindmap.execute('collapseNode', {
+                    node
+                });
+            }
+            else { // Expand to required level
+                node.expand();
+                node.children.forEach((n) => {
+                    this._setDisplayedLevel(n, level);
+                });
+            }
         }
         else {
             this.root.collapse();
