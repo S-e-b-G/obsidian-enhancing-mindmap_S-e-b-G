@@ -373,7 +373,7 @@ export default class MindMap {
         //     this.selectingNodes = false;
         // }
 
-        if (!ctrlKey && !shiftKey) {            // No special key
+        if (!ctrlKey && !shiftKey && !altKey) { // No special key
             // tab
             // tab (OK) / Insert (OK)
             if (keyCode == 9 || keyCode == 45) {
@@ -396,7 +396,7 @@ export default class MindMap {
         }
 
 
-        if (ctrlKey && !shiftKey) {             // CTRL key
+        if (ctrlKey && !shiftKey && !altKey) {  // CTRL key
             //ctrl + y
             if (keyCode == 89) {
                 e.preventDefault();
@@ -413,7 +413,7 @@ export default class MindMap {
         }
 
             // Shift + F2 : Edit as space does
-        if (!ctrlKey && shiftKey) {             // SHIFT key
+        if (!ctrlKey && shiftKey && !altKey) {  // SHIFT key
             if (keyCode == 113) {
             // if (keyCode == 45) {
                 var node = this.selectNode;
@@ -980,6 +980,18 @@ export default class MindMap {
 
 
         if (altKey && ctrlKey && !shiftKey) {           // Alt + Ctrl key
+            // Alt + Ctrl + S: Select node's text
+            if (keyCode == 83) {
+                let node = this.selectNode;
+                if(node) {
+                    node.edit();
+                    node.selectText();
+                }
+            }
+        }
+            
+            
+        if (altKey && ctrlKey && shiftKey) {            // Alt + Ctrl+ Shift key
             // None
         }
             

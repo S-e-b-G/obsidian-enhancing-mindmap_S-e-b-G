@@ -8444,14 +8444,14 @@ class MindMap {
         var keyCode = e.keyCode || e.which || e.charCode;
         var ctrlKey = e.ctrlKey || e.metaKey;
         var shiftKey = e.shiftKey;
-        e.altKey;
+        var altKey = e.altKey;
         // if (ctrlKey) {                         // Shift -> Selecting
         //     // ctrl -> selecting
         //     this.selectingNodes = true;
         // } else {
         //     this.selectingNodes = false;
         // }
-        if (!ctrlKey && !shiftKey) { // No special key
+        if (!ctrlKey && !shiftKey && !altKey) { // No special key
             // tab
             // tab (OK) / Insert (OK)
             if (keyCode == 9 || keyCode == 45) {
@@ -8469,7 +8469,7 @@ class MindMap {
                 }
             }
         }
-        if (ctrlKey && !shiftKey) { // CTRL key
+        if (ctrlKey && !shiftKey && !altKey) { // CTRL key
             //ctrl + y
             if (keyCode == 89) {
                 e.preventDefault();
@@ -8484,7 +8484,7 @@ class MindMap {
             }
         }
         // Shift + F2 : Edit as space does
-        if (!ctrlKey && shiftKey) { // SHIFT key
+        if (!ctrlKey && shiftKey && !altKey) { // SHIFT key
             if (keyCode == 113) {
                 // if (keyCode == 45) {
                 var node = this.selectNode;
@@ -8592,7 +8592,6 @@ class MindMap {
                         this._selectNode(l_selectedNode, "up");
                         l_selectedNode = l_selectedNode.parent;
                     }
-                    //this.centerOnNode(this.selectNode);
                 }
             }
             if (keyCode == 40 || e.key == 'ArrowDown') {
@@ -8604,7 +8603,6 @@ class MindMap {
                         this._selectNode(l_selectedNode, "down");
                         l_selectedNode = l_selectedNode.parent;
                     }
-                    //this.centerOnNode(this.selectNode);
                 }
             }
             if (keyCode == 39 || e.key == 'ArrowRight') {
@@ -8623,7 +8621,6 @@ class MindMap {
                         });
                         this._selectNode(node, "right");
                     }
-                    //this.centerOnNode(this.selectNode);
                 }
             }
             if (keyCode == 37 || e.key == 'ArrowLeft') {
@@ -8642,7 +8639,6 @@ class MindMap {
                         });
                         this._selectNode(node, "left");
                     }
-                    //this.centerOnNode(this.selectNode);
                 }
             }
             // Home : Select root node
@@ -8834,7 +8830,6 @@ class MindMap {
                     }
                     this.center();
                 }
-                this.centerOnNode(this.selectNode);
             }
         }
         if (ctrlKey && shiftKey && !altKey) { // CTRL + SHIFT key
@@ -8917,37 +8912,22 @@ class MindMap {
             // Alt + PageUp: collapse one level from max displayed level
             if (keyCode == 33) {
                 node = this.selectNode;
-                /*if( (!this.selectNode)                                          ||
-                    (this.getMaxDisplayedLevel()>this.selectNode.getLevel())    )
-                {// Collapse only if current selected node would not be hidden
-                    this.setDisplayedLevel(this.getMaxDisplayedLevel()-1);*/
-                /*if( (this.selectNode)                                           &&
-                    (this.getMaxDisplayedLevel()>this.selectNode.getLevel())    )*/
                 if ((node) &&
                     (this.getMaxNodeDisplayedLevel(node) > node.getLevel())) { // Collapse only if current selected node would not be hidden
-                    //this.setDisplayedLevel(this.getMaxDisplayedLevel()-1);
                     this.setChildrenDisplayedLevel(this.getMaxNodeDisplayedLevel(node) - 1);
                     this.refresh();
                     this.scale(this.mindScale);
-                    //if(this.selectNode)
-                    {
-                        this.selectNode.select();
-                    }
+                    this.selectNode.select();
                 }
             }
             // Alt + PageDn: expand one level
             if (keyCode == 34) {
-                //this.setDisplayedLevel(this.getMaxDisplayedLevel()+1);
                 node = this.selectNode;
                 if (node) {
-                    //this.setChildrenDisplayedLevel(this.getMaxDisplayedLevel()+1);
                     this.setChildrenDisplayedLevel(this.getMaxNodeDisplayedLevel(node) + 1);
                     this.refresh();
                     this.scale(this.mindScale);
-                    //if(this.selectNode)
-                    {
-                        this.selectNode.select();
-                    }
+                    this.selectNode.select();
                 }
             }
         }
@@ -8966,6 +8946,16 @@ class MindMap {
                     this.setDisplayedLevel(this.selectNode.getLevel() + 1);
                     this.refresh();
                     this.selectNode.select();
+                }
+            }
+        }
+        if (altKey && ctrlKey && !shiftKey) { // Alt + Ctrl key
+            // Alt + Ctrl + S: Select node's text
+            if (keyCode == 83) {
+                let node = this.selectNode;
+                if (node) {
+                    node.edit();
+                    node.selectText();
                 }
             }
         }
@@ -9662,16 +9652,6 @@ class MindMap {
             //this.containerEL.scrollLeft = this.setting.canvasSize / 2 - w / 2 + 30 ;
             this.containerEL.scrollTop = pos_y - (h / 2 - dim_y / 2) + 90;
             this.containerEL.scrollLeft = pos_x - (w / 2 - dim_x / 2) + 40;
-            console.log("pos,w,dim,result: " + pos_x + ", " + w + ", " + dim_x + ", " + this.containerEL.scrollLeft);
-            console.log(this.containerEL.scrollLeft);
-            console.log(pos_x);
-            console.log(w / 2);
-            console.log(dim_x / 2);
-            console.log((w / 2 - dim_x / 2));
-            console.log(pos_x - (w / 2 - dim_x / 2));
-            console.log(40);
-            console.log(pos_x - (w / 2 - dim_x / 2) + 40);
-            console.log(this.containerEL.scrollLeft);
             this.scale(oldScale);
         }
     }
@@ -9681,11 +9661,8 @@ class MindMap {
     }
     _getMaxDisplayedLevel(node) {
         // Use getMaxDisplayedLevel (without _).
-        //var currentLevel = 0;
-        //if( (node.getLevel() > this.dispLevel)  &&
         if ((node.getLevel() > tempDispLevel) &&
             (node.isShow())) { // Displayed node with higher level
-            //this.dispLevel = node.getLevel();
             tempDispLevel = node.getLevel();
         }
         if (!node.isLeaf()) { // The node has children
