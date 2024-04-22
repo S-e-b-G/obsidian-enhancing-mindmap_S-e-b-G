@@ -109,7 +109,9 @@ export default class Node {
     }
 
     parseText(){
-       
+        if (this.data.text.length === 0){
+            this.data.text = "Sub title";
+        }
         MarkdownRenderer.renderMarkdown( this.data.text ,this.contentEl,this.mindmap.path||"",null).then(()=>{
             this.data.mdText = this.contentEl.innerHTML;
             this.refreshBox();
@@ -234,6 +236,7 @@ export default class Node {
     select(){
         this.isSelect = true;
         this.containEl.setAttribute('draggable','true');
+        this.containEl.focus(); // set the dom to be focused
         Object.assign(window,{
             myNode:this
         });
@@ -271,7 +274,6 @@ export default class Node {
         if(!this.containEl.classList.contains('mm-edit-node')){
             this.containEl.classList.add('mm-edit-node')
         }
-
     }
 
     selectText() {
@@ -414,6 +416,9 @@ export default class Node {
     cancelEdit(){
         console.log("CancelEdit");
         var text = this.contentEl.innerText.trim()||'';
+        if(text.length == 0){
+            text = this._oldText
+        }
         this.data.text = text;
         this.contentEl.innerText = '';
         
