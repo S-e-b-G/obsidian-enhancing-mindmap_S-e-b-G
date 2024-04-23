@@ -38267,6 +38267,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Copy Node',
                 name: `${t('Copy node')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 'C',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38284,6 +38290,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Paste Node',
                 name: `${t('Paste node')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 'V',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38298,6 +38310,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Undo',
                 name: `${t('Undo')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 'Z',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38310,6 +38328,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Redo',
                 name: `${t('Redo')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 'Y',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38336,10 +38360,16 @@ class MindMapPlugin extends obsidian.Plugin {
                     }
                 }
             });
-            // F2
+            // Shift + F2
             this.addCommand({
                 id: 'Edit node',
                 name: `${t('Edit node')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Shift'],
+                        key: 'F2',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38356,6 +38386,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Add sibling/end editing',
                 name: `${t('Add sibling/end editing')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Shift'],
+                        key: 'Enter',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38388,6 +38424,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Insert child',
                 name: `${t('Insert child')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Shift'],
+                        key: 'Insert',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38416,6 +38458,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Delete node & child',
                 name: `${t('Delete node & child')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Shift'],
+                        key: 'Delete',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38450,6 +38498,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Bold the node\'s text',
                 name: `${t('Bold the node\'s text')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 'B',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38476,6 +38530,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Italicize the node\'s text',
                 name: `${t('Italicize the node\'s text')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 'I',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38519,6 +38579,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Highlight the node\'s text',
                 name: `${t('Highlight the node\'s text')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 'H',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38586,6 +38652,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Expand one level',
                 name: `${t('Expand one level')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt'],
+                        key: 'ArrowDown',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38602,6 +38674,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Expand one level from the max. displayed level',
                 name: `${t('Expand one level from the max. displayed level')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt'],
+                        key: 'PageDown',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38620,6 +38698,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Collapse one level',
                 name: `${t('Collapse one level')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt'],
+                        key: 'ArrowUp',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38636,6 +38720,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Collapse one level from the max. displayed level',
                 name: `${t('Collapse one level from the max. displayed level')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt'],
+                        key: 'PageUp',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38655,6 +38745,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Toggle expand/collapse node',
                 name: `${t('Toggle expand/collapse node')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Mod', 'Shift'],
+                        key: 'Space',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38670,6 +38766,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Move the current node above',
                 name: `${t('Move the current node above')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 'ArrowUp',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38696,6 +38798,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Move the current node below',
                 name: `${t('Move the current node below')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 'ArrowDown',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38722,6 +38830,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Move the current node left',
                 name: `${t('Move the current node left')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 'ArrowLeft',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38749,6 +38863,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Move the current node right',
                 name: `${t('Move the current node right')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt', 'Shift'],
+                        key: 'ArrowRight',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
@@ -38795,6 +38915,12 @@ class MindMapPlugin extends obsidian.Plugin {
             this.addCommand({
                 id: 'Center mindmap view on the current node',
                 name: `${t('Center mindmap view on the current node')}`,
+                hotkeys: [
+                    {
+                        modifiers: ['Alt'],
+                        key: 'E',
+                    },
+                ],
                 callback: () => {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
