@@ -193,13 +193,13 @@ export default class MindMapPlugin extends Plugin {
       }
     });
 
-    // Shift + Enter
+    // Alt + Shift + Enter
     this.addCommand({
       id: 'Add sibling/end editing',
       name: `${t('Add sibling/end editing')}`,
       hotkeys: [
         {
-          modifiers: ['Shift'],
+          modifiers: ['Alt', 'Shift'],
           key: 'Enter',
         },
       ],
