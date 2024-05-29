@@ -155,7 +155,7 @@ export default class MindMap {
     setMenuIcon(){
         var addNodeDom = document.createElement('span');
         var deleteNodeDom = document.createElement('span');
-        addNodeDom.classList.add('mm-icon-add-node'); 
+        addNodeDom.classList.add('mm-icon-add-node');
         deleteNodeDom.classList.add('mm-icon-delete-node');
         addNodeDom.innerHTML = addIcon;
         deleteNodeDom.innerHTML = deleteIcon;
@@ -314,14 +314,14 @@ export default class MindMap {
         document.addEventListener('compositionstart',this.compositionStart)
         document.addEventListener('compositionend',this.compositionEnd)
         document.body.addEventListener('mousewheel', this.appMousewheel);
-        
+
         if(Platform.isDesktop){
             this.appEl.addEventListener('mousedown', this.appMouseDown);
             this.appEl.addEventListener('mouseup', this.appMouseUp);
         }
 
         this.appEl.addEventListener('mousemove', this.appMouseMove);
-        
+
         this.containerEL.addEventListener('focusin', this.appFocusIn);
         this.containerEL.addEventListener('focusout', this.appFocusOut);
         //custom event
@@ -350,7 +350,7 @@ export default class MindMap {
             this.appEl.removeEventListener('mousedown', this.appMouseDown);
             this.appEl.removeEventListener('mouseup', this.appMouseUp);
         }
-        
+
         this.appEl.removeEventListener('mousemove', this.appMouseMove);
 
         this.containerEL.removeEventListener('focusin', this.appFocusIn);
@@ -481,7 +481,7 @@ export default class MindMap {
         // }
 
         if (!ctrlKey && !shiftKey && !altKey) { // NO SPECIAL KEY
-            // Enter 
+            // Enter
             // if (keyCode == 13 || e.key =='Enter') {
             //     var node = this.selectNode;
             //     e.preventDefault();
@@ -700,7 +700,7 @@ export default class MindMap {
             //         {// Set in bold the whole node
             //             this._formatNode(node, l_prefix_1, l_prefix_2);
             //             e.preventDefault();
-            //             e.stopPropagation();                
+            //             e.stopPropagation();
             //         }
 
             //         this.refresh();
@@ -727,7 +727,7 @@ export default class MindMap {
             //         {// Set in italics the whole node
             //             var text = node.data.text;
             //             if( (  ((text.substring(0,1)=="*") ||
-            //                     (text.substring(0,1)=="_") )        &&   
+            //                     (text.substring(0,1)=="_") )        &&
             //                 (text.substring(0,2)!="**")             &&
             //                 (text.substring(0,2)!="__")             )   ||
             //                 (text.substring(0,3)=="***")                ||
@@ -735,7 +735,7 @@ export default class MindMap {
             //             {// Already italic
             //                 text = text.substring(1); // Remove leading * / _
 
-            //                 if( (text.substring(text.length-1)=="*") || 
+            //                 if( (text.substring(text.length-1)=="*") ||
             //                     (text.substring(text.length-1)=="_") )   {
             //                     // Remove trailing * / _
             //                     text = text.substring(0,text.length-1);
@@ -837,7 +837,7 @@ export default class MindMap {
             //         var rootPos = this.root.getPosition();
             //         var nodePos = node.getPosition();
             //         if(rootPos.x < nodePos.x)
-            //         {                    
+            //         {
             //             this._moveAsParent(node);
             //         }
             //         else
@@ -973,7 +973,7 @@ export default class MindMap {
             //         {// Set in bold the whole node
             //             this._formatNode(node, l_prefix_1, l_prefix_2);
             //             e.preventDefault();
-            //             e.stopPropagation();                
+            //             e.stopPropagation();
             //         }
             //     }
             //     //else: no node selected: nothing to do
@@ -1000,12 +1000,12 @@ export default class MindMap {
             //         {// Set in bold the whole node
             //             this._formatNode(node, l_prefix_1, l_prefix_2);
             //             e.preventDefault();
-            //             e.stopPropagation();                
+            //             e.stopPropagation();
             //         }
             //     }
             //     //else: no node selected: nothing to do
             // }
-            
+
 
             // Alt + Home : Node info in console
             // if (keyCode == 36) {
@@ -1022,12 +1022,12 @@ export default class MindMap {
             //         console.log("Canvas: "+this.setting.canvasSize);
             //         console.log("Disp scroll: x="+this.containerEL.scrollLeft+" / y="+this.containerEL.scrollTop);
             //         console.log("Disp client: x="+this.containerEL.clientWidth+" / y="+this.containerEL.clientHeight);
-        
+
             //         //node.setText
             //     }
             // }
 
-            
+
             // // Alt + PageUp: collapse one level from max displayed level
             // if (keyCode == 33) {
             //     e.preventDefault();
@@ -1073,8 +1073,8 @@ export default class MindMap {
             //         this.selectNode.parent.select();
             //     }
             // }
-            
-            
+
+
             // Alt + PageDn: expand one level
             // if (keyCode == 34) {
             //     if(this.selectNode) {
@@ -1083,7 +1083,7 @@ export default class MindMap {
             //         this.selectNode.select();
             //     }
             // }
-            
+
         }
 
 
@@ -1102,8 +1102,8 @@ export default class MindMap {
 
 
         }
-            
-            
+
+
         if (altKey && ctrlKey && shiftKey) {            // Alt + Ctrl+ Shift key
             // None
             // if (keyCode == xx) {
@@ -1116,19 +1116,19 @@ export default class MindMap {
             //     }
             // }
         }
-            
-            
+
+
     }
 
 
     _formatNode(node: INode, i_prefix_1: string, i_prefix_2: string) {
         var text = node.data.text;
-        if( (text.substring(0,2) == i_prefix_1) || 
+        if( (text.substring(0,2) == i_prefix_1) ||
             (text.substring(0,2) == i_prefix_2) )
         {// Already formatted
             text = text.substring(i_prefix_1.length); // Remove leading prefix
 
-            if( (text.substring(text.length-2) == i_prefix_1)   || 
+            if( (text.substring(text.length-2) == i_prefix_1)   ||
                 (text.substring(text.length-2) == i_prefix_2)   )
             {// Remove trailing prefix
                 text = text.substring(0,text.length-i_prefix_1.length);
@@ -1145,7 +1145,7 @@ export default class MindMap {
         node.select();
     }
 
-    
+
     _moveAsParent(node: INode) {
         if( (!node.isEdit)          &&
             (!node.isRoot)          &&
@@ -1315,7 +1315,7 @@ export default class MindMap {
         var targetEl = evt.target as HTMLElement;
 
         if (targetEl) {
-            
+
             if (targetEl.tagName == 'A' && targetEl.hasClass("internal-link")) {
                 evt.preventDefault();
                 var targetEl = evt.target as HTMLElement;
@@ -1447,12 +1447,12 @@ export default class MindMap {
         }else{
             this._indicateDom.style.display = 'none';
         }
-        
+
     }
 
     _getDragType(node:INode, x:number, y:number) {
         if (!node) return;
-    
+
         var box = node.contentEl.getBoundingClientRect();
 
         box.x = box.x
@@ -1534,13 +1534,13 @@ export default class MindMap {
                                      var mindData = JSON.parse(res);
                                        var data:any = importXmind(mindData[0]);
 
-                                
+
 
                                        me.clearNode();
                                        me.data = data.basicData;
                                        me.init();
                                        setTimeout(()=>{
-                                           me.center(); 
+                                           me.center();
                                            me.mindMapChange();
                                        },100);
                                    });
@@ -1554,7 +1554,7 @@ export default class MindMap {
                    }
                   }
 
-            
+
        }
 
         this._indicateDom.style.display = 'none'
@@ -1592,8 +1592,8 @@ export default class MindMap {
             }
         }else{
             if(this.drag){
-                this.containerEL.scrollLeft = this._left - (evt.pageX - this.startX); 
-                this.containerEL.scrollTop = this._top - (evt.pageY - this.startY); 
+                this.containerEL.scrollLeft = this._left - (evt.pageX - this.startX);
+                this.containerEL.scrollTop = this._top - (evt.pageY - this.startY);
             }
         }
     }
@@ -1741,7 +1741,7 @@ export default class MindMap {
             dropNode.expand();
         }
 
-        if (type == 'top' || type == 'left' ||type == 'down' || type == 'right') {  
+        if (type == 'top' || type == 'left' ||type == 'down' || type == 'right') {
             this.execute('moveNode', { type: 'siblings', node: dragNode, oldParent: dragNode.parent, dropNode, direct: type })
         }
         else if (type.indexOf('child') > -1) {
@@ -1786,7 +1786,7 @@ export default class MindMap {
 
     //execute cmd , store history
     execute(name: string, data?: any) {
-        this.exec.execute(name, data);
+        return this.exec.execute(name, data);
     }
     undo() {
         this.exec.undo();
@@ -1960,7 +1960,7 @@ export default class MindMap {
     {// Display nodes whose level is <= number
         var currentLevel = 0;
 
-        if( (node.getLevel()<level) )   
+        if( (node.getLevel()<level) )
         {// Current level is to be displayed
             node.expand();
             if(!node.isLeaf())
@@ -1981,7 +1981,7 @@ export default class MindMap {
     setDisplayedLevel(level:number)
     {// Display nodes whose level is <= number
         var currentLevel = 0;
-        
+
         if(level>0) {
             var minLevel = 0;
 
@@ -2154,7 +2154,7 @@ export default class MindMap {
           }
 
            copyNode(n,null)
-        
+
            var _data = {
                type:'copyNode',
                text:data

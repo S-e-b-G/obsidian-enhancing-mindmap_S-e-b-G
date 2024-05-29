@@ -214,10 +214,13 @@ export default class MindMapPlugin extends Plugin {
                 node.expand();
               }
               if (!node.parent) return;
-              node.mindmap.execute('addSiblingNode', {
+              var newNode = node.mindmap.execute('addSiblingNode', {
                 parent: node.parent
               });
               mindmap._menuDom.style.display='none';
+
+              // Move the new node under the previously selected one
+              mindmap.moveNode(newNode, node, 'down');
             }
             else {// Editing mode => end edit mode
               //node.cancelEdit();

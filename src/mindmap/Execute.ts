@@ -28,7 +28,8 @@ interface DataProps {
 export default class Exec{
     history:History = new History(50);
     execute(name:string,data?:DataProps){
-       switch(name){
+        var l_return = null;
+        switch(name){
             case 'addChildNode':
             case 'addSiblingNode':
                 if(data){
@@ -39,6 +40,7 @@ export default class Exec{
                     var parent:INode = data.parent;
                     var node = new INode(d,parent.mindmap);
                     this.history.execute(new cmd.AddNode(node, data.parent, parent.mindmap));
+                    l_return = node;
                 }
                 break;
             case 'deleteNodeAndChild':
@@ -78,6 +80,8 @@ export default class Exec{
                 this.history.execute(new cmd.PasteNode(data.node,data.data));
                 break;
        }
+
+       return l_return;
     }
 
 

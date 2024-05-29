@@ -172,6 +172,7 @@ var en = {
     'Center mindmap view': 'Center mindmap view',
     'Display the node\'s info in console': 'Display the node\'s info in console',
     "Export to html": "Export to html",
+    "FreeMind To Enhancing mindmap": "Format from FreeMind To Enhancing mindmap",
 };
 
 // British English
@@ -241,6 +242,7 @@ var fr = {
     'Center mindmap view': 'Centrer la vue de la carte mentale',
     'Display the node\'s info in console': 'Afficher les informations du nœud dans la console',
     "Export to html": "Exporter vers html",
+    "FreeMind To Enhancing mindmap": "Formatte depuis FreeMind vers Enhancing Mindmap"
 };
 
 // हिन्दी
@@ -7968,6 +7970,7 @@ class Exec {
         this.history = new History(50);
     }
     execute(name, data) {
+        var l_return = null;
         switch (name) {
             case 'addChildNode':
             case 'addSiblingNode':
@@ -7979,6 +7982,7 @@ class Exec {
                     var parent = data.parent;
                     var node = new Node(d, parent.mindmap);
                     this.history.execute(new AddNode(node, data.parent, parent.mindmap));
+                    l_return = node;
                 }
                 break;
             case 'deleteNodeAndChild':
@@ -8018,6 +8022,7 @@ class Exec {
                 this.history.execute(new PasteNode(data.node, data.data));
                 break;
         }
+        return l_return;
     }
     undo() {
         this.history.undo();
@@ -8599,7 +8604,7 @@ class MindMap {
         //     this.selectingNodes = false;
         // }
         if (!ctrlKey && !shiftKey && !altKey) { // NO SPECIAL KEY
-            // Enter 
+            // Enter
             // if (keyCode == 13 || e.key =='Enter') {
             //     var node = this.selectNode;
             //     e.preventDefault();
@@ -8788,7 +8793,7 @@ class MindMap {
             //         {// Set in bold the whole node
             //             this._formatNode(node, l_prefix_1, l_prefix_2);
             //             e.preventDefault();
-            //             e.stopPropagation();                
+            //             e.stopPropagation();
             //         }
             //         this.refresh();
             //         this.scale(this.mindScale);
@@ -8809,14 +8814,14 @@ class MindMap {
             //         {// Set in italics the whole node
             //             var text = node.data.text;
             //             if( (  ((text.substring(0,1)=="*") ||
-            //                     (text.substring(0,1)=="_") )        &&   
+            //                     (text.substring(0,1)=="_") )        &&
             //                 (text.substring(0,2)!="**")             &&
             //                 (text.substring(0,2)!="__")             )   ||
             //                 (text.substring(0,3)=="***")                ||
             //                 (text.substring(0,3)=="___")                )
             //             {// Already italic
             //                 text = text.substring(1); // Remove leading * / _
-            //                 if( (text.substring(text.length-1)=="*") || 
+            //                 if( (text.substring(text.length-1)=="*") ||
             //                     (text.substring(text.length-1)=="_") )   {
             //                     // Remove trailing * / _
             //                     text = text.substring(0,text.length-1);
@@ -8904,7 +8909,7 @@ class MindMap {
             //         var rootPos = this.root.getPosition();
             //         var nodePos = node.getPosition();
             //         if(rootPos.x < nodePos.x)
-            //         {                    
+            //         {
             //             this._moveAsParent(node);
             //         }
             //         else
@@ -9556,7 +9561,7 @@ class MindMap {
     }
     //execute cmd , store history
     execute(name, data) {
-        this.exec.execute(name, data);
+        return this.exec.execute(name, data);
     }
     undo() {
         this.exec.undo();
@@ -38404,10 +38409,12 @@ class MindMapPlugin extends obsidian.Plugin {
                                 }
                                 if (!node.parent)
                                     return;
-                                node.mindmap.execute('addSiblingNode', {
+                                var newNode = node.mindmap.execute('addSiblingNode', {
                                     parent: node.parent
                                 });
                                 mindmap._menuDom.style.display = 'none';
+                                // Move the new node under the previously selected one
+                                mindmap.moveNode(newNode, node, 'down');
                             }
                             else { // Editing mode => end edit mode
                                 //node.cancelEdit();
