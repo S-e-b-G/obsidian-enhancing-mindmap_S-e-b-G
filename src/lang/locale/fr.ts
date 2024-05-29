@@ -42,7 +42,7 @@ export default {
     "Redo":"Rétablir",
     'Replace by the previous text':'Remplacer par le texte précédent',
     'Edit node':'Modifier le nœud',
-    'Add sibling/end editing':'Ajouter un noeud frère/terminer la modification',
+    'Add sibling/end editing':'Insérer un noeud frère / Terminer la modification',
     'Insert child':'Insérer un noeud enfant',
     'Delete node & child':'Supprimer le nœud (et ses enfants)',
     'Select the node\'s text':'Sélectionner le texte du nœud',
@@ -66,4 +66,5 @@ export default {
     'Display the node\'s info in console':'Afficher les informations du nœud dans la console',
 
     "Export to html":"Exporter vers html",
+    "FreeMind To Enhancing mindmap":"Formatte depuis FreeMind vers Enhancing Mindmap"
 };

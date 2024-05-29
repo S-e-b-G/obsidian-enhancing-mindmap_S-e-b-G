@@ -7,7 +7,7 @@ export default {
     "New mindmap board": "New mindmap board",
     "Untitled mindmap": "Untitled mindmap",
     "Open as markdown": "Open as markdown",
-  
+
     //Execute.ts
     "Sub title":"Sub title",
 
@@ -38,12 +38,12 @@ export default {
     "Toggle markdown/mindmap":"Toggle to markdown/mindmap mode",
     "Copy node":"Copy node(s)",
     "Paste node":"Paste node(s)",
-    
+
     "Undo":"Undo",
     "Redo":"Redo",
     'Replace by the previous text':'Replace by the previous text',
     'Edit node':'Edit node',
-    'Add sibling/end editing':'Add sibling/end editing',
+    'Add sibling/end editing':'Insert sibling / End editing',
     'Insert child':'Insert child',
     'Delete node & child':'Delete node & child',
     'Select the node\'s text':'Select the node\'s text',
@@ -65,6 +65,7 @@ export default {
     'Center mindmap view on the current node':'Center mindmap view on the current node',
     'Center mindmap view':'Center mindmap view',
     'Display the node\'s info in console':'Display the node\'s info in console',
-    
+
     "Export to html":"Export to html",
+    "FreeMind To Enhancing mindmap":"Format from FreeMind To Enhancing mindmap",
 };

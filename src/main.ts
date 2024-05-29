@@ -45,7 +45,7 @@ export default class MindMapPlugin extends Plugin {
         return false;
       }
     });
-    
+
      this.addCommand({
       id: 'Toggle to markdown or mindmap',
       name: `${t('Toggle markdown/mindmap')}`,
@@ -54,7 +54,7 @@ export default class MindMapPlugin extends Plugin {
         const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
         const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
         if(mindmapView!=null){
-          this.mindmapFileModes[(mindmapView.leaf as any).id || mindmapView.file.path] = 'markdown'; 
+          this.mindmapFileModes[(mindmapView.leaf as any).id || mindmapView.file.path] = 'markdown';
           this.setMarkdownView(mindmapView.leaf);
         }else if(markdownView!=null){
           this.mindmapFileModes[(markdownView.leaf as any).id || markdownView.file.path] = mindmapViewType;
@@ -84,7 +84,7 @@ export default class MindMapPlugin extends Plugin {
             navigator.clipboard.writeText(text);
           }
         }
-      
+
       }
     });
 
@@ -372,7 +372,7 @@ export default class MindMapPlugin extends Plugin {
             {// Set in italics the whole node
               var text = node.data.text;
               if( (  ((text.substring(0,1)=="*") ||
-                      (text.substring(0,1)=="_") )        &&   
+                      (text.substring(0,1)=="_") )        &&
                   (text.substring(0,2)!="**")             &&
                   (text.substring(0,2)!="__")             )   ||
                   (text.substring(0,3)=="***")                ||
@@ -380,7 +380,7 @@ export default class MindMapPlugin extends Plugin {
               {// Already italic
                 text = text.substring(1); // Remove leading * / _
 
-                if( (text.substring(text.length-1)=="*") || 
+                if( (text.substring(text.length-1)=="*") ||
                     (text.substring(text.length-1)=="_") )   {
                   // Remove trailing * / _
                   text = text.substring(0,text.length-1);
@@ -705,7 +705,7 @@ export default class MindMapPlugin extends Plugin {
             var rootPos = mindmap.root.getPosition();
             var nodePos = node.getPosition();
             if(rootPos.x < nodePos.x)
-            {                    
+            {
               mindmap._moveAsParent(node);
             }
             else
@@ -853,7 +853,7 @@ export default class MindMapPlugin extends Plugin {
   }
 
   onunload() {
-   
+
     this.app.workspace.detachLeavesOfType(mindmapViewType);
     //this.app.workspace.unregisterHoverLinkSource(frontMatterKey);
 
